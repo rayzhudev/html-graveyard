@@ -8,6 +8,17 @@ let dragStartY = 0;
 let dragIndicator = null;
 let scene = null;
 
+// Register A-Frame cursor listener component
+AFRAME.registerComponent('cursor-listener', {
+    init: function () {
+        this.el.addEventListener('click', (e) => {
+            if (this.el.classList.contains('gravestone-3d')) {
+                openInscriptionModal(this.el);
+            }
+        });
+    }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     scene = document.querySelector('a-scene');
     dragIndicator = document.getElementById('dragIndicator');
@@ -18,58 +29,38 @@ document.addEventListener('DOMContentLoaded', () => {
         generateFlowers();
         generateClouds();
         loadGravestones();
-        setupDragAndDrop();
+        
+        // Wait a bit more for canvas to be ready
+        setTimeout(() => {
+            setupDragAndDrop();
+        }, 100);
     });
 });
 
 function generateTerrain() {
     const terrain = document.getElementById('terrain');
-    const gridSize = 50;
     const blockSize = 1;
     
-    // Create layered terrain for depth
-    for (let layer = 0; layer < 3; layer++) {
-        const baseY = -layer * 2;
-        const color = interpolateColor('#7CFC00', '#228B22', layer / 2);
-        
-        for (let x = -25; x < 25; x++) {
-            for (let z = -25; z < 25; z++) {
-                // Create height variation
-                const noise = Math.sin(x * 0.1) * Math.cos(z * 0.1) * 2;
-                const hillNoise = Math.sin(x * 0.05) * Math.sin(z * 0.05) * 4;
-                const y = baseY + noise + hillNoise;
-                
-                // Skip some blocks randomly for variation
-                if (Math.random() > 0.98) continue;
-                
-                const block = document.createElement('a-box');
-                block.setAttribute('position', `${x} ${y} ${z}`);
-                block.setAttribute('width', blockSize);
-                block.setAttribute('height', blockSize);
-                block.setAttribute('depth', blockSize);
-                block.setAttribute('color', color);
-                block.setAttribute('shadow', 'receive: true');
-                
-                terrain.appendChild(block);
-            }
-        }
-    }
-    
-    // Add dirt blocks underneath
-    for (let x = -25; x < 25; x++) {
-        for (let z = -25; z < 25; z++) {
-            for (let y = -10; y < -6; y++) {
-                if (Math.random() > 0.3) {
-                    const dirt = document.createElement('a-box');
-                    dirt.setAttribute('position', `${x} ${y} ${z}`);
-                    dirt.setAttribute('width', blockSize);
-                    dirt.setAttribute('height', blockSize);
-                    dirt.setAttribute('depth', blockSize);
-                    dirt.setAttribute('color', '#8B4513');
-                    
-                    terrain.appendChild(dirt);
-                }
-            }
+    // Create single layer terrain with rolling hills
+    for (let x = -30; x < 30; x++) {
+        for (let z = -30; z < 10; z++) {
+            // Create gentle rolling hills
+            const noise = Math.sin(x * 0.08) * Math.cos(z * 0.08) * 1.5;
+            const hillNoise = Math.sin(x * 0.03) * Math.sin(z * 0.03) * 3;
+            const y = Math.floor(noise + hillNoise);
+            
+            // Skip some blocks randomly for variation
+            if (Math.random() > 0.95) continue;
+            
+            const block = document.createElement('a-box');
+            block.setAttribute('position', `${x} ${y} ${z}`);
+            block.setAttribute('width', blockSize);
+            block.setAttribute('height', blockSize);
+            block.setAttribute('depth', blockSize);
+            block.setAttribute('color', '#7CFC00');
+            block.setAttribute('shadow', 'receive: true');
+            
+            terrain.appendChild(block);
         }
     }
 }
@@ -77,9 +68,9 @@ function generateTerrain() {
 function generateTrees() {
     const trees = document.getElementById('trees');
     const treePositions = [
-        {x: -15, z: -10}, {x: 10, z: -15}, {x: -8, z: 5},
-        {x: 15, z: 10}, {x: -20, z: 0}, {x: 5, z: -20},
-        {x: 0, z: 15}, {x: -12, z: -18}, {x: 18, z: -5}
+        {x: -15, z: -15}, {x: 10, z: -20}, {x: -8, z: -5},
+        {x: 15, z: -10}, {x: -20, z: -25}, {x: 5, z: -18},
+        {x: 0, z: -8}, {x: -12, z: -22}, {x: 18, z: -12}
     ];
     
     treePositions.forEach(pos => {
@@ -124,9 +115,9 @@ function generateTrees() {
 function generateFlowers() {
     const flowers = document.getElementById('flowers');
     
-    for (let i = 0; i < 30; i++) {
-        const x = (Math.random() - 0.5) * 40;
-        const z = (Math.random() - 0.5) * 40;
+    for (let i = 0; i < 25; i++) {
+        const x = (Math.random() - 0.5) * 50;
+        const z = Math.random() * -25 - 5; // Keep flowers in visible area
         const y = getTerrainHeight(x, z) + 0.5;
         
         const flowerGroup = document.createElement('a-entity');
@@ -207,9 +198,9 @@ function generateClouds() {
 }
 
 function getTerrainHeight(x, z) {
-    const noise = Math.sin(x * 0.1) * Math.cos(z * 0.1) * 2;
-    const hillNoise = Math.sin(x * 0.05) * Math.sin(z * 0.05) * 4;
-    return noise + hillNoise;
+    const noise = Math.sin(x * 0.08) * Math.cos(z * 0.08) * 1.5;
+    const hillNoise = Math.sin(x * 0.03) * Math.sin(z * 0.03) * 3;
+    return Math.floor(noise + hillNoise);
 }
 
 function interpolateColor(color1, color2, factor) {
@@ -233,7 +224,15 @@ function hexToRgb(hex) {
 }
 
 function setupDragAndDrop() {
-    document.addEventListener('mousedown', handleMouseDown);
+    const canvas = scene.canvas || scene.querySelector('canvas');
+    
+    if (canvas) {
+        canvas.addEventListener('mousedown', handleMouseDown);
+    } else {
+        // Fallback to scene if canvas not found
+        scene.addEventListener('mousedown', handleMouseDown);
+    }
+    
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
     
@@ -249,17 +248,22 @@ function setupDragAndDrop() {
 }
 
 function handleMouseDown(e) {
-    if (e.target.closest('.modal') || e.target.tagName === 'A-SCENE') {
-        isDragging = true;
-        dragStartX = e.clientX;
-        dragStartY = e.clientY;
-        
-        dragIndicator.style.left = dragStartX + 'px';
-        dragIndicator.style.top = dragStartY + 'px';
-        dragIndicator.style.width = '0px';
-        dragIndicator.style.height = '0px';
-        dragIndicator.classList.add('active');
+    // Don't start drag if clicking on modal or gravestone
+    if (e.target.closest('.modal') || e.target.closest('.gravestone-3d')) {
+        return;
     }
+    
+    isDragging = true;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    
+    dragIndicator.style.left = dragStartX + 'px';
+    dragIndicator.style.top = dragStartY + 'px';
+    dragIndicator.style.width = '0px';
+    dragIndicator.style.height = '0px';
+    dragIndicator.classList.add('active');
+    
+    e.preventDefault();
 }
 
 function handleMouseMove(e) {
@@ -302,18 +306,15 @@ function cancelDrag() {
 }
 
 function createGravestone3D(screenX, screenY, width, height) {
-    const camera = document.querySelector('a-camera');
-    const cameraPos = camera.getAttribute('position');
-    const cameraRot = camera.getAttribute('rotation');
-    
     // Convert screen coordinates to 3D world coordinates
-    const rect = scene.getBoundingClientRect();
+    const canvas = scene.canvas || scene.querySelector('canvas');
+    const rect = canvas ? canvas.getBoundingClientRect() : scene.getBoundingClientRect();
     const x = ((screenX - rect.left) / rect.width) * 2 - 1;
     const y = -((screenY - rect.top) / rect.height) * 2 + 1;
     
-    // Project to ground plane
-    const worldX = x * 30;
-    const worldZ = -y * 20 + 10;
+    // Adjust world positioning for the new camera angle
+    const worldX = x * 20;
+    const worldZ = (y * 15) - 5; // Closer to camera is lower z
     const worldY = getTerrainHeight(worldX, worldZ) + 1;
     
     const id = `grave_${gravestoneIdCounter++}`;
@@ -325,8 +326,8 @@ function createGravestone3D(screenX, screenY, width, height) {
     gravestone.setAttribute('position', `${worldX} ${worldY} ${worldZ}`);
     
     // Scale based on drag size
-    const scale = Math.min(width / 100, 2);
-    const stoneHeight = Math.min(height / 50, 4);
+    const scale = Math.min(Math.max(width / 80, 0.5), 2);
+    const stoneHeight = Math.min(Math.max(height / 40, 1), 4);
     
     // Create tombstone from blocks
     const stoneColor = '#C0C0C0';
@@ -373,8 +374,8 @@ function createGravestone3D(screenX, screenY, width, height) {
     
     gravestonesContainer.appendChild(gravestone);
     
-    // Add click handler
-    gravestone.addEventListener('click', () => openInscriptionModal(gravestone));
+    // Add click handler using A-Frame component
+    gravestone.setAttribute('cursor-listener', '');
     
     // Store gravestone data
     gravestones[id] = {
@@ -558,7 +559,8 @@ function loadGravestones() {
             
             gravestonesContainer.appendChild(gravestone);
             
-            gravestone.addEventListener('click', () => openInscriptionModal(gravestone));
+            // Add click handler using A-Frame component
+            gravestone.setAttribute('cursor-listener', '');
             
             const idNum = parseInt(id.split('_')[1]);
             if (idNum >= gravestoneIdCounter) {
