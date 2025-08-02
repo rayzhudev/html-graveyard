@@ -9,7 +9,8 @@ A peaceful, daytime garden cemetery where visitors can create and inscribe tombs
 - Inscribe names, dates, and epitaphs on tombstones
 - Local storage persistence for all tombstones and inscriptions
 - Animated elements including drifting clouds, flying birds, and flower bursts
-- Mobile responsive design
+- Mobile responsive design with haptic feedback
+- Footer link to discover more projects
 
 ## How to Use
 

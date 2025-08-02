@@ -47,6 +47,10 @@ An interactive "Garden of Memories" cemetery built during HTML in Hyde #1. Users
   - Prevented text selection on tombstones and inscription text
   - Fixed long press conflict with text selection
   - Added pointer-events: none to inscription text for better UX
+- ✅ **Added footer navigation** - Portfolio discovery:
+  - Subtle footer link to home.rayzhu.me for project discovery
+  - Modern glass-morphism design with backdrop blur
+  - Non-intrusive positioning that doesn't interfere with cemetery interaction
 
 ## Next Steps
 
@@ -67,7 +71,7 @@ An interactive "Garden of Memories" cemetery built during HTML in Hyde #1. Users
 html-graveyard/
 ├── index.html          # Main page with 3D clouds and 2D cemetery
 ├── script.js           # Interactive functionality (740+ lines)
-├── styles.css          # Styling with peaceful garden theme (600+ lines)
+├── styles.css          # Styling with peaceful garden theme (650+ lines)
 ├── og-image.png        # OpenGraph/social media preview image (1.7MB)
 ├── package.json        # Build configuration for deployment
 ├── .gitignore          # Excludes build artifacts
