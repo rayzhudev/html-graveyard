@@ -11,6 +11,11 @@ let dragIndicator = null;
 let lastTap = 0;
 let tapTimeout = null;
 
+// Mobile long press detection
+let longPressTimer = null;
+let longPressTarget = null;
+let isLongPressing = false;
+
 document.addEventListener('DOMContentLoaded', () => {
     dragIndicator = document.getElementById('dragIndicator');
 
@@ -195,7 +200,7 @@ function handleMouseUp(e) {
         const centerX = (e.clientX + dragStartX) / 2;
         const centerY = (e.clientY + dragStartY) / 2;
 
-        create2DTombstone(centerX, centerY, width, height);
+        create2DTombstone(centerX, centerY, width, height, 'drag');
     }
 
     cancelDrag();
@@ -270,7 +275,7 @@ function handleTouchEnd(e) {
         const centerX = (touch.clientX + dragStartX) / 2;
         const centerY = (touch.clientY + dragStartY) / 2;
 
-        create2DTombstone(centerX, centerY, width, height);
+        create2DTombstone(centerX, centerY, width, height, 'drag');
     }
 
     cancelDrag();
@@ -282,10 +287,15 @@ function createStandardTombstone(screenX, screenY) {
     const standardWidth = 120;
     const standardHeight = 150;
 
-    create2DTombstone(screenX, screenY, standardWidth, standardHeight);
+    create2DTombstone(screenX, screenY, standardWidth, standardHeight, 'doubletap');
 
     // Show a brief visual feedback for the double-tap
     showDoubleTapFeedback(screenX, screenY);
+
+    // Add haptic feedback for creation
+    if (navigator.vibrate) {
+        navigator.vibrate(80); // Single satisfying buzz for creation
+    }
 }
 
 function showDoubleTapFeedback(x, y) {
@@ -318,7 +328,86 @@ function showDoubleTapFeedback(x, y) {
     }, 300);
 }
 
-function create2DTombstone(screenX, screenY, width, height) {
+// Long press functionality for tombstone deletion
+function startLongPress(tombstone, e) {
+    isLongPressing = false;
+    longPressTarget = tombstone;
+
+    // Visual feedback - start pulsing the tombstone
+    tombstone.style.transition = 'transform 0.1s ease';
+    tombstone.style.transform = tombstone.style.transform + ' scale(0.95)';
+
+    longPressTimer = setTimeout(() => {
+        if (longPressTarget === tombstone) {
+            isLongPressing = true;
+            // Add red overlay to indicate deletion mode
+            showLongPressFeedback(tombstone);
+            // Trigger haptic feedback if available
+            if (navigator.vibrate) {
+                navigator.vibrate(100);
+            }
+        }
+    }, 600); // 600ms for long press
+}
+
+function cancelLongPress() {
+    if (longPressTimer) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+    }
+
+    if (longPressTarget) {
+        // Reset visual feedback
+        longPressTarget.style.transition = 'transform 0.2s ease';
+        const currentTransform = longPressTarget.style.transform.replace(' scale(0.95)', '');
+        longPressTarget.style.transform = currentTransform;
+
+        // Remove any long press feedback
+        removeLongPressFeedback();
+    }
+
+    longPressTarget = null;
+    isLongPressing = false;
+}
+
+function completeLongPress() {
+    if (isLongPressing && longPressTarget) {
+        // Delete immediately without confirmation
+        removeTombstone(longPressTarget);
+        // Add haptic feedback for deletion
+        if (navigator.vibrate) {
+            navigator.vibrate([50, 50, 50]); // Triple short buzz for deletion
+        }
+    }
+    cancelLongPress();
+}
+
+function showLongPressFeedback(tombstone) {
+    // Add red overlay to tombstone
+    const overlay = document.createElement('div');
+    overlay.className = 'long-press-overlay';
+    overlay.style.position = 'absolute';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+    overlay.style.borderRadius = '8px';
+    overlay.style.pointerEvents = 'none';
+    overlay.style.zIndex = '10';
+    overlay.style.animation = 'pulse 0.5s infinite alternate';
+
+    tombstone.appendChild(overlay);
+}
+
+function removeLongPressFeedback() {
+    const overlays = document.querySelectorAll('.long-press-overlay');
+    overlays.forEach(overlay => overlay.remove());
+}
+
+// Removed confirmation dialog - now deletes immediately
+
+function create2DTombstone(screenX, screenY, width, height, creationType = 'unknown') {
     const cemetery = document.querySelector('.cemetery-2d');
     const rect = cemetery.getBoundingClientRect();
 
@@ -367,13 +456,39 @@ function create2DTombstone(screenX, screenY, width, height) {
     tombstonesContainer.appendChild(tombstone);
 
     // Add click handler
-    tombstone.addEventListener('click', () => openInscriptionModal(tombstone));
+    tombstone.addEventListener('click', (e) => {
+        // Don't open modal if this was a long press
+        if (!isLongPressing) {
+            openInscriptionModal(tombstone);
+        }
+    });
 
-    // Add right-click handler to remove tombstone
+    // Add right-click handler to remove tombstone (desktop)
     tombstone.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         removeTombstone(tombstone);
     });
+
+    // Add touch handlers for mobile long press delete
+    tombstone.addEventListener('touchstart', (e) => {
+        e.stopPropagation(); // Prevent cemetery touch events
+        startLongPress(tombstone, e);
+    }, { passive: false });
+
+    tombstone.addEventListener('touchmove', (e) => {
+        // Cancel long press if user moves finger
+        cancelLongPress();
+    }, { passive: false });
+
+    tombstone.addEventListener('touchend', (e) => {
+        e.stopPropagation(); // Prevent cemetery touch events
+        if (isLongPressing) {
+            e.preventDefault(); // Prevent click event
+            completeLongPress();
+        } else {
+            cancelLongPress();
+        }
+    }, { passive: false });
 
     // Store tombstone data
     tombstones[id] = {
@@ -388,6 +503,11 @@ function create2DTombstone(screenX, screenY, width, height) {
 
     save2DTombstones();
     animateTombstoneAppearance(tombstone);
+
+    // Add haptic feedback for drag creation (double-tap has its own feedback)
+    if (navigator.vibrate && creationType === 'drag') {
+        navigator.vibrate(80); // Single satisfying buzz for creation
+    }
 }
 
 function animateTombstoneAppearance(tombstone) {
@@ -582,13 +702,39 @@ function load2DTombstones() {
             tombstonesContainer.appendChild(tombstone);
 
             // Add click handler
-            tombstone.addEventListener('click', () => openInscriptionModal(tombstone));
+            tombstone.addEventListener('click', (e) => {
+                // Don't open modal if this was a long press
+                if (!isLongPressing) {
+                    openInscriptionModal(tombstone);
+                }
+            });
 
-            // Add right-click handler to remove tombstone
+            // Add right-click handler to remove tombstone (desktop)
             tombstone.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 removeTombstone(tombstone);
             });
+
+            // Add touch handlers for mobile long press delete
+            tombstone.addEventListener('touchstart', (e) => {
+                e.stopPropagation(); // Prevent cemetery touch events
+                startLongPress(tombstone, e);
+            }, { passive: false });
+
+            tombstone.addEventListener('touchmove', (e) => {
+                // Cancel long press if user moves finger
+                cancelLongPress();
+            }, { passive: false });
+
+            tombstone.addEventListener('touchend', (e) => {
+                e.stopPropagation(); // Prevent cemetery touch events
+                if (isLongPressing) {
+                    e.preventDefault(); // Prevent click event
+                    completeLongPress();
+                } else {
+                    cancelLongPress();
+                }
+            }, { passive: false });
 
             const idNum = parseInt(id.split('_')[1]);
             if (idNum >= tombstoneIdCounter) {

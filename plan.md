@@ -36,6 +36,17 @@ An interactive "Garden of Memories" cemetery built during HTML in Hyde #1. Users
   - Touch drag still works for custom-sized tombstones
   - Visual feedback animation on double-tap
   - Prevents conflicts between touch and mouse events
+- ✅ **Added mobile long press delete** - Enhanced mobile tombstone management:
+  - Long press any tombstone (600ms) to delete it immediately
+  - Visual feedback with red overlay and pulsing animation
+  - Triple haptic feedback buzz for deletion
+- ✅ **Added haptic feedback** - Enhanced tactile experience:
+  - Single buzz when creating tombstones (both double-tap and drag)
+  - Triple buzz when deleting tombstones (long press)
+- ✅ **Fixed text selection issues** - Improved mobile/desktop interaction:
+  - Prevented text selection on tombstones and inscription text
+  - Fixed long press conflict with text selection
+  - Added pointer-events: none to inscription text for better UX
 
 ## Next Steps
 
@@ -55,8 +66,8 @@ An interactive "Garden of Memories" cemetery built during HTML in Hyde #1. Users
 ```
 html-graveyard/
 ├── index.html          # Main page with 3D clouds and 2D cemetery
-├── script.js           # Interactive functionality (570+ lines)
-├── styles.css          # Styling with peaceful garden theme (528 lines)
+├── script.js           # Interactive functionality (740+ lines)
+├── styles.css          # Styling with peaceful garden theme (600+ lines)
 ├── og-image.png        # OpenGraph/social media preview image (1.7MB)
 ├── package.json        # Build configuration for deployment
 ├── .gitignore          # Excludes build artifacts

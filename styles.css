@@ -1,15 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400&family=Dancing+Script&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400&family=Dancing+Script&display=swap");
 
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: 'Merriweather', serif;
-    overflow-x: hidden;
-    background: #87CEEB;
+  font-family: "Merriweather", serif;
+  overflow-x: hidden;
+  background: #87ceeb;
 }
 
 /* Hide all VR-related UI elements */
@@ -20,509 +20,581 @@ body {
 .a-enter-vr-modal,
 [data-aframe-vr-ui],
 a-scene .a-enter-vr {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Long press feedback animations */
+@keyframes pulse {
+  0% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.long-press-overlay {
+  animation: pulse 0.5s infinite alternate;
 }
 
 /* 3D Clouds Container at Top */
 .clouds-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 40vh;
-    z-index: 1;
-    pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40vh;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .clouds-container a-scene {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 }
 
 /* 2D Cemetery */
 .cemetery-2d {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    background: linear-gradient(180deg, #87CEEB 0%, #98D8E8 30%, #7CFC00 100%);
-    overflow: hidden;
-    perspective: 1000px;
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(180deg, #87ceeb 0%, #98d8e8 30%, #7cfc00 100%);
+  overflow: hidden;
+  perspective: 1000px;
 }
 
 .sky-gradient {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 50%;
-    background: linear-gradient(180deg, 
-        rgba(135, 206, 235, 0.8) 0%, 
-        rgba(176, 224, 230, 0.6) 40%,
-        rgba(124, 252, 0, 0.2) 100%);
-    z-index: 2;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: linear-gradient(
+    180deg,
+    rgba(135, 206, 235, 0.8) 0%,
+    rgba(176, 224, 230, 0.6) 40%,
+    rgba(124, 252, 0, 0.2) 100%
+  );
+  z-index: 2;
 }
 
 /* Layered Hills for Depth */
 .hills-layer {
-    position: absolute;
-    bottom: 0;
-    width: 120%;
-    left: -10%;
-    border-radius: 50% 50% 0 0;
-    opacity: 0.9;
+  position: absolute;
+  bottom: 0;
+  width: 120%;
+  left: -10%;
+  border-radius: 50% 50% 0 0;
+  opacity: 0.9;
 }
 
 .hills-far {
-    height: 15%;
-    background: linear-gradient(45deg, #3CB371, #2E8B57);
-    z-index: 3;
-    transform: translateZ(-100px) scale(1.1);
-    filter: blur(1px);
+  height: 15%;
+  background: linear-gradient(45deg, #3cb371, #2e8b57);
+  z-index: 3;
+  transform: translateZ(-100px) scale(1.1);
+  filter: blur(1px);
 }
 
 .hills-mid {
-    height: 25%;
-    background: linear-gradient(45deg, #32CD32, #228B22);
-    z-index: 4;
-    transform: translateZ(-50px) scale(1.05);
+  height: 25%;
+  background: linear-gradient(45deg, #32cd32, #228b22);
+  z-index: 4;
+  transform: translateZ(-50px) scale(1.05);
 }
 
 .hills-near {
-    height: 35%;
-    background: linear-gradient(45deg, #7CFC00, #32CD32);
-    z-index: 5;
+  height: 35%;
+  background: linear-gradient(45deg, #7cfc00, #32cd32);
+  z-index: 5;
 }
 
 /* Textured Grass Fields */
 .grass-field {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    background-repeat: repeat;
-    background-size: 4px 4px;
-    opacity: 0.8;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background-repeat: repeat;
+  background-size: 4px 4px;
+  opacity: 0.8;
 }
 
 .grass-far {
-    height: 20%;
-    background: 
-        linear-gradient(90deg, transparent 0%, rgba(50, 205, 50, 0.3) 50%, transparent 100%),
-        repeating-linear-gradient(90deg, 
-            #228B22 0px, #228B22 1px, 
-            #32CD32 1px, #32CD32 2px,
-            #3CB371 2px, #3CB371 3px,
-            #228B22 3px, #228B22 4px
-        );
-    z-index: 6;
-    animation: grassWave 8s ease-in-out infinite;
+  height: 20%;
+  background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(50, 205, 50, 0.3) 50%,
+      transparent 100%
+    ),
+    repeating-linear-gradient(
+      90deg,
+      #228b22 0px,
+      #228b22 1px,
+      #32cd32 1px,
+      #32cd32 2px,
+      #3cb371 2px,
+      #3cb371 3px,
+      #228b22 3px,
+      #228b22 4px
+    );
+  z-index: 6;
+  animation: grassWave 8s ease-in-out infinite;
 }
 
 .grass-mid {
-    height: 30%;
-    background: 
-        radial-gradient(ellipse at center, rgba(124, 252, 0, 0.4) 0%, transparent 70%),
-        repeating-linear-gradient(45deg, 
-            #32CD32 0px, #32CD32 2px, 
-            #7CFC00 2px, #7CFC00 4px,
-            #3CB371 4px, #3CB371 6px,
-            #32CD32 6px, #32CD32 8px
-        );
-    z-index: 7;
-    animation: grassWave 6s ease-in-out infinite reverse;
+  height: 30%;
+  background: radial-gradient(
+      ellipse at center,
+      rgba(124, 252, 0, 0.4) 0%,
+      transparent 70%
+    ),
+    repeating-linear-gradient(
+      45deg,
+      #32cd32 0px,
+      #32cd32 2px,
+      #7cfc00 2px,
+      #7cfc00 4px,
+      #3cb371 4px,
+      #3cb371 6px,
+      #32cd32 6px,
+      #32cd32 8px
+    );
+  z-index: 7;
+  animation: grassWave 6s ease-in-out infinite reverse;
 }
 
 .grass-near {
-    height: 40%;
-    background: 
-        linear-gradient(180deg, transparent 0%, rgba(124, 252, 0, 0.6) 100%),
-        repeating-linear-gradient(90deg, 
-            #7CFC00 0px, #7CFC00 1px, 
-            #32CD32 1px, #32CD32 2px,
-            #ADFF2F 2px, #ADFF2F 3px,
-            #7CFC00 3px, #7CFC00 4px
-        ),
-        repeating-linear-gradient(0deg, 
-            transparent 0px, transparent 3px,
-            rgba(34, 139, 34, 0.2) 3px, rgba(34, 139, 34, 0.2) 4px
-        );
-    z-index: 8;
-    animation: grassWave 4s ease-in-out infinite;
+  height: 40%;
+  background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(124, 252, 0, 0.6) 100%
+    ),
+    repeating-linear-gradient(
+      90deg,
+      #7cfc00 0px,
+      #7cfc00 1px,
+      #32cd32 1px,
+      #32cd32 2px,
+      #adff2f 2px,
+      #adff2f 3px,
+      #7cfc00 3px,
+      #7cfc00 4px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 3px,
+      rgba(34, 139, 34, 0.2) 3px,
+      rgba(34, 139, 34, 0.2) 4px
+    );
+  z-index: 8;
+  animation: grassWave 4s ease-in-out infinite;
 }
 
 @keyframes grassWave {
-    0%, 100% { transform: translateX(0px) scaleX(1); }
-    50% { transform: translateX(3px) scaleX(1.01); }
+  0%,
+  100% {
+    transform: translateX(0px) scaleX(1);
+  }
+  50% {
+    transform: translateX(3px) scaleX(1.01);
+  }
 }
 
 /* 2D Trees */
 .trees-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: 10;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
 }
 
 .tree {
-    position: absolute;
-    cursor: default;
-    transform-origin: bottom center;
-    transition: transform 0.3s ease;
+  position: absolute;
+  cursor: default;
+  transform-origin: bottom center;
+  transition: transform 0.3s ease;
 }
 
 .tree::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #8B4513;
-    border-radius: 0 0 3px 3px;
-    box-shadow: inset -2px 0 4px rgba(0,0,0,0.3);
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #8b4513;
+  border-radius: 0 0 3px 3px;
+  box-shadow: inset -2px 0 4px rgba(0, 0, 0, 0.3);
 }
 
 .tree::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #228B22;
-    border-radius: 50%;
-    box-shadow: 
-        0 2px 8px rgba(0,0,0,0.2),
-        inset -3px -3px 0 rgba(0,0,0,0.1);
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #228b22;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset -3px -3px 0 rgba(0, 0, 0, 0.1);
 }
 
 .tree-far {
-    z-index: 6;
-    opacity: 0.7;
-    filter: blur(0.5px);
+  z-index: 6;
+  opacity: 0.7;
+  filter: blur(0.5px);
 }
 
 .tree-far::before {
-    width: 3px;
-    height: 15px;
+  width: 3px;
+  height: 15px;
 }
 
 .tree-far::after {
-    width: 20px;
-    height: 20px;
-    bottom: 12px;
-    background: #2E8B57;
+  width: 20px;
+  height: 20px;
+  bottom: 12px;
+  background: #2e8b57;
 }
 
 .tree-mid {
-    z-index: 9;
+  z-index: 9;
 }
 
 .tree-mid::before {
-    width: 5px;
-    height: 25px;
+  width: 5px;
+  height: 25px;
 }
 
 .tree-mid::after {
-    width: 35px;
-    height: 35px;
-    bottom: 20px;
-    background: #228B22;
+  width: 35px;
+  height: 35px;
+  bottom: 20px;
+  background: #228b22;
 }
 
 .tree-near {
-    z-index: 12;
+  z-index: 12;
 }
 
 .tree-near::before {
-    width: 8px;
-    height: 40px;
+  width: 8px;
+  height: 40px;
 }
 
 .tree-near::after {
-    width: 50px;
-    height: 50px;
-    bottom: 35px;
-    background: #32CD32;
+  width: 50px;
+  height: 50px;
+  bottom: 35px;
+  background: #32cd32;
 }
 
 .tree:hover {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 /* 2D Flowers */
 .flowers-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: 11;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 11;
 }
 
 .flower {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    cursor: default;
-    animation: flowerBob 3s ease-in-out infinite;
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  cursor: default;
+  animation: flowerBob 3s ease-in-out infinite;
 }
 
 .flower::before {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .flower::after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 2px;
-    height: 8px;
-    background: #228B22;
-    border-radius: 1px;
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 8px;
+  background: #228b22;
+  border-radius: 1px;
 }
 
-.flower-yellow::before { background: radial-gradient(circle, #FFD700 30%, #FFA500 100%); }
-.flower-pink::before { background: radial-gradient(circle, #FF69B4 30%, #FF1493 100%); }
-.flower-purple::before { background: radial-gradient(circle, #DDA0DD 30%, #BA55D3 100%); }
-.flower-blue::before { background: radial-gradient(circle, #87CEEB 30%, #4682B4 100%); }
+.flower-yellow::before {
+  background: radial-gradient(circle, #ffd700 30%, #ffa500 100%);
+}
+.flower-pink::before {
+  background: radial-gradient(circle, #ff69b4 30%, #ff1493 100%);
+}
+.flower-purple::before {
+  background: radial-gradient(circle, #dda0dd 30%, #ba55d3 100%);
+}
+.flower-blue::before {
+  background: radial-gradient(circle, #87ceeb 30%, #4682b4 100%);
+}
 
 @keyframes flowerBob {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-2px) rotate(1deg); }
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(1deg);
+  }
 }
 
 /* 2D Tombstones */
 .tombstones-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: 15;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 15;
 }
 
 .tombstone-2d {
-    position: absolute;
-    cursor: pointer;
-    transition: all 0.4s ease;
-    transform-origin: bottom center;
-    filter: drop-shadow(4px 6px 12px rgba(0,0,0,0.4));
+  position: absolute;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  transform-origin: bottom center;
+  filter: drop-shadow(4px 6px 12px rgba(0, 0, 0, 0.4));
+  /* Prevent text selection on mobile and desktop */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .tombstone-2d:hover {
-    transform: translateY(-5px) scale(1.03);
-    filter: drop-shadow(6px 12px 20px rgba(0,0,0,0.5));
+  transform: translateY(-5px) scale(1.03);
+  filter: drop-shadow(6px 12px 20px rgba(0, 0, 0, 0.5));
 }
 
 .tombstone-stone {
-    background: #B8B8B8;
-    border: 3px solid #000000;
-    border-radius: 30px 30px 8px 8px;
-    padding: 16px 12px;
-    text-align: center;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
-    box-shadow: 
-        inset 3px 3px 0 #E0E0E0,
-        inset -3px -3px 0 #808080;
-    min-height: 120px;
+  background: #b8b8b8;
+  border: 3px solid #000000;
+  border-radius: 30px 30px 8px 8px;
+  padding: 16px 12px;
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  box-shadow: inset 3px 3px 0 #e0e0e0, inset -3px -3px 0 #808080;
+  min-height: 120px;
+  /* Prevent text selection */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .tombstone-stone::before {
-    content: '';
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    right: 4px;
-    bottom: 4px;
-    background: #A0A0A0;
-    border: 1px solid #707070;
-    border-radius: 26px 26px 4px 4px;
-    box-shadow: 
-        inset 2px 2px 0 #D0D0D0,
-        inset -2px -2px 0 #606060;
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  background: #a0a0a0;
+  border: 1px solid #707070;
+  border-radius: 26px 26px 4px 4px;
+  box-shadow: inset 2px 2px 0 #d0d0d0, inset -2px -2px 0 #606060;
 }
 
 .inscription-text {
-    font-size: 0.75rem;
-    color: #000000;
-    line-height: 1.3;
-    font-weight: bold;
-    text-shadow: 
-        1px 0 0 #FFFFFF,
-        0 1px 0 #FFFFFF,
-        -1px 0 0 #FFFFFF,
-        0 -1px 0 #FFFFFF;
-    word-wrap: break-word;
-    white-space: pre-line;
-    font-family: 'Courier New', monospace;
-    letter-spacing: 0.5px;
-    position: relative;
-    z-index: 10;
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
-    text-rendering: optimizeSpeed;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
+  font-size: 0.75rem;
+  color: #000000;
+  line-height: 1.3;
+  font-weight: bold;
+  text-shadow: 1px 0 0 #ffffff, 0 1px 0 #ffffff, -1px 0 0 #ffffff,
+    0 -1px 0 #ffffff;
+  word-wrap: break-word;
+  white-space: pre-line;
+  font-family: "Courier New", monospace;
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 10;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  text-rendering: optimizeSpeed;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  /* Prevent text selection - most important for the actual text */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  pointer-events: none; /* Prevents text cursor and selection */
 }
 
 /* Modal and Drag Indicator remain the same */
 .inscription-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 2000;
-    align-items: center;
-    justify-content: center;
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
 }
 
 .inscription-modal.active {
-    display: flex;
+  display: flex;
 }
 
 .modal-content {
-    background: white;
-    border-radius: 10px;
-    padding: 2rem;
-    max-width: 500px;
-    width: 90%;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  background: white;
+  border-radius: 10px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .modal-content h2 {
-    color: #2E7D32;
-    margin-bottom: 1.5rem;
-    text-align: center;
-    font-family: 'Dancing Script', cursive;
-    font-size: 2rem;
+  color: #2e7d32;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-family: "Dancing Script", cursive;
+  font-size: 2rem;
 }
 
 #inscriptionForm {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .modal-instructions {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 1rem;
-    line-height: 1.4;
-    text-align: center;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+  text-align: center;
 }
 
 #inscriptionText {
-    background: #F5F5F5;
-    border: 2px solid #CCCCCC;
-    border-radius: 8px;
-    padding: 1rem;
-    font-family: 'Times New Roman', serif;
-    font-size: 1rem;
-    outline: none;
-    transition: all 0.3s;
-    resize: vertical;
-    min-height: 200px;
-    line-height: 1.5;
-    width: 100%;
+  background: #f5f5f5;
+  border: 2px solid #cccccc;
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: "Times New Roman", serif;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s;
+  resize: vertical;
+  min-height: 200px;
+  line-height: 1.5;
+  width: 100%;
 }
 
 #inscriptionText:focus {
-    border-color: #4CAF50;
-    box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
-    background: #FAFAFA;
+  border-color: #4caf50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+  background: #fafafa;
 }
 
 .modal-buttons {
-    display: flex;
-    gap: 1rem;
-    margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
 .btn-inscribe,
 .btn-cancel {
-    flex: 1;
-    padding: 0.8rem;
-    font-family: 'Merriweather', serif;
-    font-size: 0.9rem;
-    cursor: pointer;
-    border: none;
-    border-radius: 5px;
-    transition: all 0.3s;
+  flex: 1;
+  padding: 0.8rem;
+  font-family: "Merriweather", serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  transition: all 0.3s;
 }
 
 .btn-inscribe {
-    background: #4CAF50;
-    color: white;
+  background: #4caf50;
+  color: white;
 }
 
 .btn-inscribe:hover {
-    background: #45A049;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
 }
 
 .btn-cancel {
-    background: #F44336;
-    color: white;
+  background: #f44336;
+  color: white;
 }
 
 .btn-cancel:hover {
-    background: #E53935;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
+  background: #e53935;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
 }
 
 .drag-indicator {
-    position: fixed;
-    border: 2px dashed rgba(255, 255, 255, 0.8);
-    background: rgba(255, 255, 255, 0.1);
-    pointer-events: none;
-    display: none;
-    z-index: 1500;
+  position: fixed;
+  border: 2px dashed rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+  display: none;
+  z-index: 1500;
 }
 
 .drag-indicator.active {
-    display: block;
+  display: block;
 }
 
 /* Remove A-Frame VR button */
 .a-enter-vr {
-    display: none !important;
+  display: none !important;
 }
 
 @media (max-width: 768px) {
-    .modal-content {
-        padding: 1.5rem;
-        width: 95%;
-    }
-    
-    .modal-content h2 {
-        font-size: 1.5rem;
-    }
-    
-    .tree-near::after {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .tombstone-2d {
-        transform: scale(0.9);
-    }
+  .modal-content {
+    padding: 1.5rem;
+    width: 95%;
+  }
+
+  .modal-content h2 {
+    font-size: 1.5rem;
+  }
+
+  .tree-near::after {
+    width: 40px;
+    height: 40px;
+  }
+
+  .tombstone-2d {
+    transform: scale(0.9);
+  }
 }

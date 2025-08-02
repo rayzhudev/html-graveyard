@@ -24,4 +24,5 @@ A peaceful, daytime garden cemetery where visitors can create and inscribe tombs
 1. **Double-tap** anywhere on the green hills to create a standard-sized tombstone
 2. Or drag with your finger to create a custom-sized tombstone
 3. Tap on any tombstone to add an inscription
-4. All tombstones and inscriptions are saved automatically
+4. **Long press** any tombstone to delete it immediately
+5. All tombstones and inscriptions are saved automatically
