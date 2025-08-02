@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <!-- Background -->
+  <rect width="16" height="16" fill="#2d5a3d"/>
+  <!-- Grass -->
+  <rect x="0" y="12" width="16" height="4" fill="#4a7c3c"/>
+  <!-- Tombstone -->
+  <rect x="5" y="3" width="6" height="10" rx="3" ry="3" fill="#8b9098"/>
+  <!-- Cross -->
+  <rect x="7.5" y="5" width="1" height="4" fill="#6b7078"/>
+  <rect x="6.5" y="6.5" width="3" height="1" fill="#6b7078"/>
+  <!-- Small flowers -->
+  <circle cx="3" cy="11" r="0.8" fill="#ff69b4"/>
+  <circle cx="13" cy="10" r="0.8" fill="#ffd700"/>
+  <circle cx="8" cy="12" r="0.6" fill="#87ceeb"/>
+</svg> 

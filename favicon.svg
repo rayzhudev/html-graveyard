@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Background -->
+  <rect width="32" height="32" fill="#2d5a3d"/>
+  
+  <!-- Grass base -->
+  <rect x="0" y="24" width="32" height="8" fill="#4a7c3c"/>
+  
+  <!-- Tombstone -->
+  <rect x="11" y="8" width="10" height="16" rx="5" ry="5" fill="#8b9098" stroke="#6b7078" stroke-width="0.5"/>
+  
+  <!-- Tombstone cross engraving -->
+  <rect x="15.2" y="11" width="1.6" height="6" fill="#6b7078"/>
+  <rect x="13.5" y="13.2" width="5" height="1.6" fill="#6b7078"/>
+  
+  <!-- Small flowers around tombstone -->
+  <!-- Left flowers -->
+  <circle cx="8" cy="20" r="1.2" fill="#ff69b4"/>
+  <circle cx="8" cy="20" r="0.6" fill="#ffb6c1"/>
+  
+  <circle cx="6" cy="22" r="1" fill="#9370db"/>
+  <circle cx="6" cy="22" r="0.5" fill="#dda0dd"/>
+  
+  <!-- Right flowers -->
+  <circle cx="24" cy="19" r="1.2" fill="#ffd700"/>
+  <circle cx="24" cy="19" r="0.6" fill="#fff8dc"/>
+  
+  <circle cx="26" cy="21" r="1" fill="#ff1493"/>
+  <circle cx="26" cy="21" r="0.5" fill="#ffb6c1"/>
+  
+  <!-- Bottom flowers -->
+  <circle cx="12" cy="23" r="0.8" fill="#87ceeb"/>
+  <circle cx="12" cy="23" r="0.4" fill="#e0f6ff"/>
+  
+  <circle cx="20" cy="23" r="0.8" fill="#98fb98"/>
+  <circle cx="20" cy="23" r="0.4" fill="#f0fff0"/>
+  
+  <!-- Tiny flower stems -->
+  <rect x="7.8" y="21" width="0.4" height="2" fill="#228b22"/>
+  <rect x="5.8" y="23" width="0.4" height="1.5" fill="#228b22"/>
+  <rect x="23.8" y="20" width="0.4" height="2.5" fill="#228b22"/>
+  <rect x="25.8" y="22" width="0.4" height="2" fill="#228b22"/>
+  <rect x="11.8" y="24" width="0.4" height="1" fill="#228b22"/>
+  <rect x="19.8" y="24" width="0.4" height="1" fill="#228b22"/>
+</svg> 

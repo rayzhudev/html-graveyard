@@ -1,13 +1,13 @@
 {
   "name": "html-graveyard",
   "version": "1.0.0",
-  "description": "A peaceful, daytime garden cemetery where visitors can create and inscribe tombstones",
-  "main": "index.html",
-  "scripts": {
-    "build": "mkdir -p dist && cp *.html *.css *.js *.md *.png dist/ 2>/dev/null || true",
-    "start": "python3 -m http.server 8000",
-    "dev": "python3 -m http.server 8000"
+  "author": "rayzhudev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rayzhudev/html-graveyard.git"
   },
+  "main": "index.html",
+  "description": "A peaceful, daytime garden cemetery where visitors can create and inscribe tombstones",
   "keywords": [
     "html",
     "cemetery",
@@ -15,10 +15,10 @@
     "aframe",
     "static"
   ],
-  "author": "rayzhudev",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/rayzhudev/html-graveyard.git"
+  "scripts": {
+    "build": "mkdir -p dist && cp *.html *.css *.js *.md *.png dist/ 2>/dev/null || true",
+    "start": "python3 -m http.server 8000",
+    "dev": "python3 -m http.server 8000"
   }
 }

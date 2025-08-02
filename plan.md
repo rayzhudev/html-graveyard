@@ -51,6 +51,12 @@ An interactive "Garden of Memories" cemetery built during HTML in Hyde #1. Users
   - Subtle footer link to home.rayzhu.me for project discovery
   - Modern glass-morphism design with backdrop blur
   - Non-intrusive positioning that doesn't interfere with cemetery interaction
+- ✅ **Added tombstone favicon** - Enhanced branding:
+  - Custom SVG favicon featuring a tombstone with cross engraving
+  - Colorful flowers (pink, yellow, blue) scattered around the tombstone
+  - Green grass base matching the cemetery theme
+  - Multiple format support (SVG for modern browsers, ICO fallback)
+  - Apple touch icon support for iOS devices
 
 ## Next Steps
 
