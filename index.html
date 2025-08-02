@@ -3,48 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garden of Memories - A Peaceful Resting Place</title>
+    <title>Garden of Memories</title>
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="sky">
-        <div class="sun"></div>
-        <div class="cloud cloud1"></div>
-        <div class="cloud cloud2"></div>
-        <div class="cloud cloud3"></div>
-    </div>
-    
-    <header>
-        <h1 class="title">Garden of Memories</h1>
-        <p class="subtitle">A peaceful place to remember</p>
-    </header>
+    <a-scene 
+        embedded 
+        vr-mode-ui="enabled: false"
+        cursor="rayOrigin: mouse"
+        renderer="antialias: false; pixelRatio: 1">
+        
+        <!-- Fixed Camera -->
+        <a-camera 
+            position="0 25 40" 
+            rotation="-35 0 0"
+            fov="60"
+            look-controls="enabled: false"
+            wasd-controls="enabled: false">
+        </a-camera>
 
-    <main class="cemetery">
-        <div class="hill hill1">
-            <div class="tree tree1"></div>
-            <div class="tree tree2"></div>
-            <div class="flower flower1"></div>
-            <div class="flower flower2"></div>
-            <div class="flower flower3"></div>
-        </div>
-        
-        <div class="hill hill2">
-            <div class="tree tree3"></div>
-            <div class="flower flower4"></div>
-            <div class="flower flower5"></div>
-        </div>
-        
-        <div class="hill hill3">
-            <div class="tree tree4"></div>
-            <div class="tree tree5"></div>
-            <div class="flower flower6"></div>
-            <div class="flower flower7"></div>
-        </div>
-        
-        <div id="gravestones-container"></div>
-        
-        <div class="drag-preview" id="dragPreview"></div>
-    </main>
+        <!-- Sky -->
+        <a-sky color="#87CEEB"></a-sky>
+
+        <!-- Lighting -->
+        <a-light type="ambient" color="#ffffff" intensity="0.6"></a-light>
+        <a-light type="directional" 
+                 position="3 10 5" 
+                 color="#FFD700" 
+                 intensity="0.8"
+                 castShadow="true">
+        </a-light>
+
+        <!-- Terrain -->
+        <a-entity id="terrain"></a-entity>
+
+        <!-- Trees -->
+        <a-entity id="trees"></a-entity>
+
+        <!-- Flowers -->
+        <a-entity id="flowers"></a-entity>
+
+        <!-- Gravestones Container -->
+        <a-entity id="gravestones-3d"></a-entity>
+
+        <!-- Clouds -->
+        <a-entity id="clouds"></a-entity>
+    </a-scene>
 
     <div class="inscription-modal" id="inscriptionModal">
         <div class="modal-content">
@@ -62,9 +67,7 @@
         </div>
     </div>
 
-    <div class="instructions">
-        <p>Click and drag to place a tombstone</p>
-    </div>
+    <div class="drag-indicator" id="dragIndicator"></div>
 
     <script src="script.js"></script>
 </body>

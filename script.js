@@ -5,43 +5,261 @@ let gravestoneIdCounter = 0;
 let isDragging = false;
 let dragStartX = 0;
 let dragStartY = 0;
-let dragPreview = null;
+let dragIndicator = null;
+let scene = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadGravestones();
-    setupDragAndDrop();
-    addBirds();
+    scene = document.querySelector('a-scene');
+    dragIndicator = document.getElementById('dragIndicator');
+    
+    scene.addEventListener('loaded', () => {
+        generateTerrain();
+        generateTrees();
+        generateFlowers();
+        generateClouds();
+        loadGravestones();
+        setupDragAndDrop();
+    });
 });
 
-function setupDragAndDrop() {
-    const cemetery = document.querySelector('.cemetery');
-    dragPreview = document.getElementById('dragPreview');
+function generateTerrain() {
+    const terrain = document.getElementById('terrain');
+    const gridSize = 50;
+    const blockSize = 1;
     
-    cemetery.addEventListener('mousedown', handleMouseDown);
-    cemetery.addEventListener('mousemove', handleMouseMove);
-    cemetery.addEventListener('mouseup', handleMouseUp);
+    // Create layered terrain for depth
+    for (let layer = 0; layer < 3; layer++) {
+        const baseY = -layer * 2;
+        const color = interpolateColor('#7CFC00', '#228B22', layer / 2);
+        
+        for (let x = -25; x < 25; x++) {
+            for (let z = -25; z < 25; z++) {
+                // Create height variation
+                const noise = Math.sin(x * 0.1) * Math.cos(z * 0.1) * 2;
+                const hillNoise = Math.sin(x * 0.05) * Math.sin(z * 0.05) * 4;
+                const y = baseY + noise + hillNoise;
+                
+                // Skip some blocks randomly for variation
+                if (Math.random() > 0.98) continue;
+                
+                const block = document.createElement('a-box');
+                block.setAttribute('position', `${x} ${y} ${z}`);
+                block.setAttribute('width', blockSize);
+                block.setAttribute('height', blockSize);
+                block.setAttribute('depth', blockSize);
+                block.setAttribute('color', color);
+                block.setAttribute('shadow', 'receive: true');
+                
+                terrain.appendChild(block);
+            }
+        }
+    }
+    
+    // Add dirt blocks underneath
+    for (let x = -25; x < 25; x++) {
+        for (let z = -25; z < 25; z++) {
+            for (let y = -10; y < -6; y++) {
+                if (Math.random() > 0.3) {
+                    const dirt = document.createElement('a-box');
+                    dirt.setAttribute('position', `${x} ${y} ${z}`);
+                    dirt.setAttribute('width', blockSize);
+                    dirt.setAttribute('height', blockSize);
+                    dirt.setAttribute('depth', blockSize);
+                    dirt.setAttribute('color', '#8B4513');
+                    
+                    terrain.appendChild(dirt);
+                }
+            }
+        }
+    }
+}
+
+function generateTrees() {
+    const trees = document.getElementById('trees');
+    const treePositions = [
+        {x: -15, z: -10}, {x: 10, z: -15}, {x: -8, z: 5},
+        {x: 15, z: 10}, {x: -20, z: 0}, {x: 5, z: -20},
+        {x: 0, z: 15}, {x: -12, z: -18}, {x: 18, z: -5}
+    ];
+    
+    treePositions.forEach(pos => {
+        const treeGroup = document.createElement('a-entity');
+        const y = getTerrainHeight(pos.x, pos.z) + 1;
+        
+        // Trunk
+        for (let i = 0; i < 4; i++) {
+            const trunk = document.createElement('a-box');
+            trunk.setAttribute('position', `${pos.x} ${y + i} ${pos.z}`);
+            trunk.setAttribute('width', '1');
+            trunk.setAttribute('height', '1');
+            trunk.setAttribute('depth', '1');
+            trunk.setAttribute('color', '#8B4513');
+            treeGroup.appendChild(trunk);
+        }
+        
+        // Leaves
+        const leafPositions = [
+            {x: 0, y: 4, z: 0}, {x: 1, y: 4, z: 0}, {x: -1, y: 4, z: 0},
+            {x: 0, y: 4, z: 1}, {x: 0, y: 4, z: -1},
+            {x: 0, y: 5, z: 0}, {x: 1, y: 5, z: 0}, {x: -1, y: 5, z: 0},
+            {x: 0, y: 5, z: 1}, {x: 0, y: 5, z: -1},
+            {x: 0, y: 6, z: 0}
+        ];
+        
+        leafPositions.forEach(leaf => {
+            const leafBlock = document.createElement('a-box');
+            leafBlock.setAttribute('position', `${pos.x + leaf.x} ${y + leaf.y} ${pos.z + leaf.z}`);
+            leafBlock.setAttribute('width', '1');
+            leafBlock.setAttribute('height', '1');
+            leafBlock.setAttribute('depth', '1');
+            leafBlock.setAttribute('color', '#228B22');
+            leafBlock.setAttribute('opacity', '0.9');
+            treeGroup.appendChild(leafBlock);
+        });
+        
+        trees.appendChild(treeGroup);
+    });
+}
+
+function generateFlowers() {
+    const flowers = document.getElementById('flowers');
+    
+    for (let i = 0; i < 30; i++) {
+        const x = (Math.random() - 0.5) * 40;
+        const z = (Math.random() - 0.5) * 40;
+        const y = getTerrainHeight(x, z) + 0.5;
+        
+        const flowerGroup = document.createElement('a-entity');
+        
+        // Stem
+        const stem = document.createElement('a-box');
+        stem.setAttribute('position', `${x} ${y} ${z}`);
+        stem.setAttribute('width', '0.1');
+        stem.setAttribute('height', '0.5');
+        stem.setAttribute('depth', '0.1');
+        stem.setAttribute('color', '#228B22');
+        flowerGroup.appendChild(stem);
+        
+        // Flower head
+        const flowerColors = ['#FFD700', '#FF69B4', '#DDA0DD', '#87CEEB', '#FFA500'];
+        const color = flowerColors[Math.floor(Math.random() * flowerColors.length)];
+        
+        const petalPositions = [
+            {x: 0.2, z: 0}, {x: -0.2, z: 0},
+            {x: 0, z: 0.2}, {x: 0, z: -0.2}
+        ];
+        
+        petalPositions.forEach(petal => {
+            const petalBlock = document.createElement('a-box');
+            petalBlock.setAttribute('position', `${x + petal.x} ${y + 0.5} ${z + petal.z}`);
+            petalBlock.setAttribute('width', '0.3');
+            petalBlock.setAttribute('height', '0.3');
+            petalBlock.setAttribute('depth', '0.3');
+            petalBlock.setAttribute('color', color);
+            flowerGroup.appendChild(petalBlock);
+        });
+        
+        flowers.appendChild(flowerGroup);
+    }
+}
+
+function generateClouds() {
+    const clouds = document.getElementById('clouds');
+    
+    for (let i = 0; i < 5; i++) {
+        const cloudGroup = document.createElement('a-entity');
+        const x = (Math.random() - 0.5) * 60;
+        const y = 15 + Math.random() * 10;
+        const z = (Math.random() - 0.5) * 60;
+        
+        // Create cloud from multiple white boxes
+        const cloudBlocks = [
+            {x: 0, y: 0, z: 0}, {x: 1, y: 0, z: 0}, {x: -1, y: 0, z: 0},
+            {x: 0, y: 0, z: 1}, {x: 0, y: 0, z: -1},
+            {x: 2, y: 0, z: 0}, {x: -2, y: 0, z: 0},
+            {x: 1, y: 0, z: 1}, {x: -1, y: 0, z: -1}
+        ];
+        
+        cloudBlocks.forEach(block => {
+            if (Math.random() > 0.3) {
+                const cloudBlock = document.createElement('a-box');
+                cloudBlock.setAttribute('position', `${x + block.x * 2} ${y + block.y} ${z + block.z * 2}`);
+                cloudBlock.setAttribute('width', '3');
+                cloudBlock.setAttribute('height', '2');
+                cloudBlock.setAttribute('depth', '3');
+                cloudBlock.setAttribute('color', '#FFFFFF');
+                cloudBlock.setAttribute('opacity', '0.8');
+                cloudGroup.appendChild(cloudBlock);
+            }
+        });
+        
+        // Animate cloud movement
+        cloudGroup.setAttribute('animation', {
+            property: 'position',
+            to: `${x + 100} ${y} ${z}`,
+            dur: 120000,
+            loop: true,
+            easing: 'linear'
+        });
+        
+        clouds.appendChild(cloudGroup);
+    }
+}
+
+function getTerrainHeight(x, z) {
+    const noise = Math.sin(x * 0.1) * Math.cos(z * 0.1) * 2;
+    const hillNoise = Math.sin(x * 0.05) * Math.sin(z * 0.05) * 4;
+    return noise + hillNoise;
+}
+
+function interpolateColor(color1, color2, factor) {
+    const c1 = hexToRgb(color1);
+    const c2 = hexToRgb(color2);
+    
+    const r = Math.round(c1.r + (c2.r - c1.r) * factor);
+    const g = Math.round(c1.g + (c2.g - c1.g) * factor);
+    const b = Math.round(c1.b + (c2.b - c1.b) * factor);
+    
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+}
+
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
+
+function setupDragAndDrop() {
+    document.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
     
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && isDragging) {
-            cancelDrag();
+        if (e.key === 'Escape') {
+            if (isDragging) {
+                cancelDrag();
+            } else {
+                closeModal();
+            }
         }
     });
 }
 
 function handleMouseDown(e) {
-    if (e.target.closest('.gravestone') || e.target.closest('.modal') || e.target.closest('header')) {
-        return;
+    if (e.target.closest('.modal') || e.target.tagName === 'A-SCENE') {
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        
+        dragIndicator.style.left = dragStartX + 'px';
+        dragIndicator.style.top = dragStartY + 'px';
+        dragIndicator.style.width = '0px';
+        dragIndicator.style.height = '0px';
+        dragIndicator.classList.add('active');
     }
-    
-    isDragging = true;
-    dragStartX = e.clientX;
-    dragStartY = e.clientY;
-    
-    dragPreview.style.left = dragStartX + 'px';
-    dragPreview.style.top = dragStartY + 'px';
-    dragPreview.style.width = '0px';
-    dragPreview.style.height = '0px';
-    dragPreview.classList.add('active');
 }
 
 function handleMouseMove(e) {
@@ -56,10 +274,10 @@ function handleMouseMove(e) {
     const left = Math.min(currentX, dragStartX);
     const top = Math.min(currentY, dragStartY);
     
-    dragPreview.style.left = left + 'px';
-    dragPreview.style.top = top + 'px';
-    dragPreview.style.width = width + 'px';
-    dragPreview.style.height = height + 'px';
+    dragIndicator.style.left = left + 'px';
+    dragIndicator.style.top = top + 'px';
+    dragIndicator.style.width = width + 'px';
+    dragIndicator.style.height = height + 'px';
 }
 
 function handleMouseUp(e) {
@@ -68,13 +286,11 @@ function handleMouseUp(e) {
     const width = Math.abs(e.clientX - dragStartX);
     const height = Math.abs(e.clientY - dragStartY);
     
-    if (width > 50 && height > 50) {
-        createGravestone(
-            Math.min(e.clientX, dragStartX),
-            Math.min(e.clientY, dragStartY),
-            Math.min(Math.max(width, 80), 200),
-            Math.min(Math.max(height, 100), 250)
-        );
+    if (width > 20 && height > 20) {
+        const centerX = (e.clientX + dragStartX) / 2;
+        const centerY = (e.clientY + dragStartY) / 2;
+        
+        createGravestone3D(centerX, centerY, width, height);
     }
     
     cancelDrag();
@@ -82,39 +298,91 @@ function handleMouseUp(e) {
 
 function cancelDrag() {
     isDragging = false;
-    dragPreview.classList.remove('active');
+    dragIndicator.classList.remove('active');
 }
 
-function createGravestone(x, y, width, height) {
+function createGravestone3D(screenX, screenY, width, height) {
+    const camera = document.querySelector('a-camera');
+    const cameraPos = camera.getAttribute('position');
+    const cameraRot = camera.getAttribute('rotation');
+    
+    // Convert screen coordinates to 3D world coordinates
+    const rect = scene.getBoundingClientRect();
+    const x = ((screenX - rect.left) / rect.width) * 2 - 1;
+    const y = -((screenY - rect.top) / rect.height) * 2 + 1;
+    
+    // Project to ground plane
+    const worldX = x * 30;
+    const worldZ = -y * 20 + 10;
+    const worldY = getTerrainHeight(worldX, worldZ) + 1;
+    
     const id = `grave_${gravestoneIdCounter++}`;
-    const container = document.getElementById('gravestones-container');
+    const gravestonesContainer = document.getElementById('gravestones-3d');
     
-    const gravestone = document.createElement('div');
-    gravestone.className = 'gravestone';
-    gravestone.dataset.id = id;
-    gravestone.style.left = x + 'px';
-    gravestone.style.top = y + 'px';
-    gravestone.style.width = width + 'px';
-    gravestone.style.height = height + 'px';
+    const gravestone = document.createElement('a-entity');
+    gravestone.setAttribute('id', id);
+    gravestone.setAttribute('class', 'gravestone-3d');
+    gravestone.setAttribute('position', `${worldX} ${worldY} ${worldZ}`);
     
-    const stoneTop = document.createElement('div');
-    stoneTop.className = 'stone-top';
+    // Scale based on drag size
+    const scale = Math.min(width / 100, 2);
+    const stoneHeight = Math.min(height / 50, 4);
     
-    const stoneBody = document.createElement('div');
-    stoneBody.className = 'stone-body';
-    stoneBody.innerHTML = `
-        <p class="epitaph">Click to inscribe...</p>
-        <p class="dates">????-????</p>
-    `;
+    // Create tombstone from blocks
+    const stoneColor = '#C0C0C0';
     
-    gravestone.appendChild(stoneTop);
-    gravestone.appendChild(stoneBody);
-    container.appendChild(gravestone);
+    // Base
+    const base = document.createElement('a-box');
+    base.setAttribute('position', '0 0 0');
+    base.setAttribute('width', scale);
+    base.setAttribute('height', '0.2');
+    base.setAttribute('depth', '0.5');
+    base.setAttribute('color', stoneColor);
+    base.setAttribute('shadow', 'cast: true; receive: true');
+    gravestone.appendChild(base);
     
+    // Main stone
+    const mainStone = document.createElement('a-box');
+    mainStone.setAttribute('position', `0 ${stoneHeight/2 + 0.1} 0`);
+    mainStone.setAttribute('width', scale * 0.8);
+    mainStone.setAttribute('height', stoneHeight);
+    mainStone.setAttribute('depth', '0.3');
+    mainStone.setAttribute('color', stoneColor);
+    mainStone.setAttribute('shadow', 'cast: true; receive: true');
+    gravestone.appendChild(mainStone);
+    
+    // Top curved part (simplified with box)
+    const topStone = document.createElement('a-box');
+    topStone.setAttribute('position', `0 ${stoneHeight + 0.3} 0`);
+    topStone.setAttribute('width', scale * 0.6);
+    topStone.setAttribute('height', '0.4');
+    topStone.setAttribute('depth', '0.3');
+    topStone.setAttribute('color', stoneColor);
+    topStone.setAttribute('shadow', 'cast: true; receive: true');
+    gravestone.appendChild(topStone);
+    
+    // Text
+    const text = document.createElement('a-text');
+    text.setAttribute('value', 'Click to\ninscribe');
+    text.setAttribute('position', `0 ${stoneHeight/2 + 0.1} 0.16`);
+    text.setAttribute('align', 'center');
+    text.setAttribute('color', '#333333');
+    text.setAttribute('width', 4);
+    text.setAttribute('wrap-count', 10);
+    gravestone.appendChild(text);
+    
+    gravestonesContainer.appendChild(gravestone);
+    
+    // Add click handler
     gravestone.addEventListener('click', () => openInscriptionModal(gravestone));
     
+    // Store gravestone data
     gravestones[id] = {
-        x, y, width, height,
+        x: worldX,
+        y: worldY,
+        z: worldZ,
+        scale: scale,
+        height: stoneHeight,
         inscription: null
     };
     
@@ -123,30 +391,35 @@ function createGravestone(x, y, width, height) {
 }
 
 function animateGravestoneAppearance(gravestone) {
-    gravestone.style.transform = 'scale(0) translateY(20px)';
-    gravestone.style.opacity = '0';
+    const startY = gravestone.getAttribute('position').y - 2;
+    gravestone.setAttribute('position', `${gravestone.getAttribute('position').x} ${startY} ${gravestone.getAttribute('position').z}`);
+    gravestone.setAttribute('scale', '0 0 0');
     
-    setTimeout(() => {
-        gravestone.style.transition = 'all 0.5s ease-out';
-        gravestone.style.transform = 'scale(1) translateY(0)';
-        gravestone.style.opacity = '1';
-    }, 10);
+    gravestone.setAttribute('animation__position', {
+        property: 'position',
+        to: `${gravestone.getAttribute('position').x} ${gravestone.getAttribute('position').y + 2} ${gravestone.getAttribute('position').z}`,
+        dur: 500,
+        easing: 'easeOutBack'
+    });
+    
+    gravestone.setAttribute('animation__scale', {
+        property: 'scale',
+        to: '1 1 1',
+        dur: 500,
+        easing: 'easeOutBack'
+    });
 }
 
 function openInscriptionModal(gravestone) {
     currentGravestone = gravestone;
     const modal = document.getElementById('inscriptionModal');
     modal.classList.add('active');
-    
-    playSound('open');
 }
 
 function closeModal() {
     const modal = document.getElementById('inscriptionModal');
     modal.classList.remove('active');
     document.getElementById('inscriptionForm').reset();
-    
-    playSound('close');
 }
 
 document.getElementById('inscriptionForm').addEventListener('submit', (e) => {
@@ -165,72 +438,125 @@ document.getElementById('inscriptionForm').addEventListener('submit', (e) => {
         timestamp: Date.now()
     };
     
-    const id = currentGravestone.dataset.id;
+    const id = currentGravestone.getAttribute('id');
     if (gravestones[id]) {
         gravestones[id].inscription = inscription;
     }
     
-    updateGravestone(currentGravestone, inscription);
+    updateGravestone3D(currentGravestone, inscription);
     saveGravestones();
     closeModal();
     
-    playSound('inscribe');
-    createFlowerBurst(currentGravestone);
+    createFlowerBurst3D(currentGravestone);
 });
 
-function updateGravestone(stone, inscription) {
-    const epitaphElement = stone.querySelector('.epitaph');
-    const datesElement = stone.querySelector('.dates');
+function updateGravestone3D(gravestone, inscription) {
+    const text = gravestone.querySelector('a-text');
+    const textValue = `${inscription.name}\n${inscription.birthYear}-${inscription.deathYear}\n${inscription.epitaph}`;
+    text.setAttribute('value', textValue);
+    text.setAttribute('wrap-count', 15);
+}
+
+function createFlowerBurst3D(gravestone) {
+    const pos = gravestone.getAttribute('position');
+    const flowers = document.getElementById('flowers');
     
-    epitaphElement.innerHTML = `${inscription.name}<br>${inscription.epitaph}`;
-    datesElement.textContent = `${inscription.birthYear}-${inscription.deathYear}`;
-    
-    stone.classList.add('inscribed');
+    for (let i = 0; i < 8; i++) {
+        const angle = (Math.PI * 2 * i) / 8;
+        const distance = 2;
+        const x = parseFloat(pos.x) + Math.cos(angle) * distance;
+        const z = parseFloat(pos.z) + Math.sin(angle) * distance;
+        const y = getTerrainHeight(x, z) + 0.5;
+        
+        const flowerColors = ['#FFD700', '#FF69B4', '#DDA0DD', '#87CEEB', '#FFA500'];
+        const color = flowerColors[Math.floor(Math.random() * flowerColors.length)];
+        
+        const flower = document.createElement('a-box');
+        flower.setAttribute('position', `${x} ${y} ${z}`);
+        flower.setAttribute('width', '0.3');
+        flower.setAttribute('height', '0.3');
+        flower.setAttribute('depth', '0.3');
+        flower.setAttribute('color', color);
+        flower.setAttribute('scale', '0 0 0');
+        
+        flower.setAttribute('animation__scale', {
+            property: 'scale',
+            to: '1 1 1',
+            dur: 500,
+            delay: i * 50,
+            easing: 'easeOutBack'
+        });
+        
+        flowers.appendChild(flower);
+    }
 }
 
 function saveGravestones() {
-    localStorage.setItem('garden_gravestones', JSON.stringify(gravestones));
+    localStorage.setItem('minecraft_gravestones', JSON.stringify(gravestones));
 }
 
 function loadGravestones() {
-    const saved = localStorage.getItem('garden_gravestones');
+    const saved = localStorage.getItem('minecraft_gravestones');
     if (saved) {
         const loaded = JSON.parse(saved);
         Object.assign(gravestones, loaded);
         
         Object.entries(loaded).forEach(([id, data]) => {
-            const container = document.getElementById('gravestones-container');
+            const gravestonesContainer = document.getElementById('gravestones-3d');
             
-            const gravestone = document.createElement('div');
-            gravestone.className = 'gravestone';
-            gravestone.dataset.id = id;
-            gravestone.style.left = data.x + 'px';
-            gravestone.style.top = data.y + 'px';
-            gravestone.style.width = data.width + 'px';
-            gravestone.style.height = data.height + 'px';
+            const gravestone = document.createElement('a-entity');
+            gravestone.setAttribute('id', id);
+            gravestone.setAttribute('class', 'gravestone-3d');
+            gravestone.setAttribute('position', `${data.x} ${data.y} ${data.z}`);
             
-            const stoneTop = document.createElement('div');
-            stoneTop.className = 'stone-top';
+            const stoneColor = '#C0C0C0';
             
-            const stoneBody = document.createElement('div');
-            stoneBody.className = 'stone-body';
+            // Base
+            const base = document.createElement('a-box');
+            base.setAttribute('position', '0 0 0');
+            base.setAttribute('width', data.scale);
+            base.setAttribute('height', '0.2');
+            base.setAttribute('depth', '0.5');
+            base.setAttribute('color', stoneColor);
+            base.setAttribute('shadow', 'cast: true; receive: true');
+            gravestone.appendChild(base);
             
+            // Main stone
+            const mainStone = document.createElement('a-box');
+            mainStone.setAttribute('position', `0 ${data.height/2 + 0.1} 0`);
+            mainStone.setAttribute('width', data.scale * 0.8);
+            mainStone.setAttribute('height', data.height);
+            mainStone.setAttribute('depth', '0.3');
+            mainStone.setAttribute('color', stoneColor);
+            mainStone.setAttribute('shadow', 'cast: true; receive: true');
+            gravestone.appendChild(mainStone);
+            
+            // Top stone
+            const topStone = document.createElement('a-box');
+            topStone.setAttribute('position', `0 ${data.height + 0.3} 0`);
+            topStone.setAttribute('width', data.scale * 0.6);
+            topStone.setAttribute('height', '0.4');
+            topStone.setAttribute('depth', '0.3');
+            topStone.setAttribute('color', stoneColor);
+            topStone.setAttribute('shadow', 'cast: true; receive: true');
+            gravestone.appendChild(topStone);
+            
+            // Text
+            const text = document.createElement('a-text');
             if (data.inscription) {
-                stoneBody.innerHTML = `
-                    <p class="epitaph">${data.inscription.name}<br>${data.inscription.epitaph}</p>
-                    <p class="dates">${data.inscription.birthYear}-${data.inscription.deathYear}</p>
-                `;
-                gravestone.classList.add('inscribed');
+                const textValue = `${data.inscription.name}\n${data.inscription.birthYear}-${data.inscription.deathYear}\n${data.inscription.epitaph}`;
+                text.setAttribute('value', textValue);
             } else {
-                stoneBody.innerHTML = `
-                    <p class="epitaph">Click to inscribe...</p>
-                    <p class="dates">????-????</p>
-                `;
+                text.setAttribute('value', 'Click to\ninscribe');
             }
+            text.setAttribute('position', `0 ${data.height/2 + 0.1} 0.16`);
+            text.setAttribute('align', 'center');
+            text.setAttribute('color', '#333333');
+            text.setAttribute('width', 4);
+            text.setAttribute('wrap-count', 15);
+            gravestone.appendChild(text);
             
-            gravestone.appendChild(stoneTop);
-            gravestone.appendChild(stoneBody);
-            container.appendChild(gravestone);
+            gravestonesContainer.appendChild(gravestone);
             
             gravestone.addEventListener('click', () => openInscriptionModal(gravestone));
             
@@ -241,119 +567,3 @@ function loadGravestones() {
         });
     }
 }
-
-function createFlowerBurst(element) {
-    const rect = element.getBoundingClientRect();
-    const flowerCount = 8;
-    
-    for (let i = 0; i < flowerCount; i++) {
-        const flower = document.createElement('div');
-        flower.style.position = 'fixed';
-        flower.style.left = rect.left + rect.width / 2 + 'px';
-        flower.style.top = rect.top + rect.height / 2 + 'px';
-        flower.style.width = '20px';
-        flower.style.height = '20px';
-        flower.style.background = `radial-gradient(circle, ${getRandomFlowerColor()} 30%, ${getRandomFlowerColor()} 100%)`;
-        flower.style.borderRadius = '50%';
-        flower.style.pointerEvents = 'none';
-        flower.style.zIndex = '3000';
-        document.body.appendChild(flower);
-        
-        const angle = (Math.PI * 2 * i) / flowerCount;
-        const velocity = 2 + Math.random() * 2;
-        const vx = Math.cos(angle) * velocity;
-        const vy = Math.sin(angle) * velocity - 2;
-        
-        let opacity = 1;
-        let x = 0;
-        let y = 0;
-        let rotation = 0;
-        
-        const animate = () => {
-            x += vx;
-            y += vy + 0.5;
-            opacity -= 0.015;
-            rotation += 5;
-            
-            flower.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
-            flower.style.opacity = opacity;
-            
-            if (opacity > 0) {
-                requestAnimationFrame(animate);
-            } else {
-                flower.remove();
-            }
-        };
-        
-        requestAnimationFrame(animate);
-    }
-}
-
-function getRandomFlowerColor() {
-    const colors = ['#FFD700', '#FF69B4', '#DDA0DD', '#87CEEB', '#FFA500', '#FF1493', '#BA55D3', '#F0E68C'];
-    return colors[Math.floor(Math.random() * colors.length)];
-}
-
-function addBirds() {
-    const birdSounds = ['tweet', 'chirp', 'whistle'];
-    
-    setInterval(() => {
-        if (Math.random() < 0.3) {
-            const bird = document.createElement('div');
-            bird.style.position = 'fixed';
-            bird.style.left = '-50px';
-            bird.style.top = Math.random() * window.innerHeight * 0.3 + 'px';
-            bird.style.width = '20px';
-            bird.style.height = '10px';
-            bird.style.background = '#333';
-            bird.style.borderRadius = '50%';
-            bird.style.zIndex = '500';
-            bird.style.pointerEvents = 'none';
-            document.body.appendChild(bird);
-            
-            const speed = 2 + Math.random() * 2;
-            const waveAmplitude = 20 + Math.random() * 20;
-            const waveFrequency = 0.01 + Math.random() * 0.02;
-            let x = -50;
-            const startY = parseFloat(bird.style.top);
-            
-            const fly = () => {
-                x += speed;
-                const y = startY + Math.sin(x * waveFrequency) * waveAmplitude;
-                
-                bird.style.left = x + 'px';
-                bird.style.top = y + 'px';
-                
-                if (x < window.innerWidth + 50) {
-                    requestAnimationFrame(fly);
-                } else {
-                    bird.remove();
-                }
-            };
-            
-            requestAnimationFrame(fly);
-        }
-    }, 5000);
-}
-
-function playSound(type) {
-    const audio = new Audio();
-    audio.volume = 0.2;
-    
-    const sounds = {
-        open: 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=',
-        close: 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=',
-        inscribe: 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA='
-    };
-    
-    if (sounds[type]) {
-        audio.src = sounds[type];
-        audio.play().catch(() => {});
-    }
-}
-
-window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        closeModal();
-    }
-});
