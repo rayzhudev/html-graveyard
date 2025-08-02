@@ -17,7 +17,7 @@
   ],
   "license": "MIT",
   "scripts": {
-    "build": "mkdir -p dist && cp *.html *.css *.js *.md *.png dist/ 2>/dev/null || true",
+    "build": "mkdir -p dist && cp *.html *.css *.js *.md *.png *.svg *.ico dist/ 2>/dev/null || true",
     "start": "python3 -m http.server 8000",
     "dev": "python3 -m http.server 8000"
   }
