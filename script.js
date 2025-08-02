@@ -40,23 +40,23 @@ document.addEventListener('DOMContentLoaded', () => {
 function generateDramaticTerrain() {
     const terrain = document.getElementById('terrain');
     
-    // Create dramatic perspective terrain - from huge foreground to tiny background
-    for (let z = 5; z >= -100; z -= 0.5) { // Much closer to much further
-        for (let x = -60; x <= 60; x += 0.8) {
+    // Create dramatic perspective terrain - from close to distant horizon
+    for (let z = 15; z >= -80; z -= 0.4) { // Adjusted range for elevated view
+        for (let x = -50; x <= 50; x += 0.6) {
             // Distance from camera affects everything
-            const distance = Math.abs(z - 5) + 1;
-            const distanceFactor = 1 / (distance * 0.05 + 1);
+            const distance = Math.abs(z - 15) + 1;
+            const distanceFactor = 1 / (distance * 0.03 + 1);
             
-            // Progressive scaling - huge blocks up close, tiny ones far away
-            const blockSize = Math.max(0.1, 4 * distanceFactor);
+            // Progressive scaling - larger blocks up close, smaller far away
+            const blockSize = Math.max(0.2, 2 * distanceFactor);
             
             // Skip blocks randomly based on distance for performance
-            if (Math.random() > 0.3 + distanceFactor * 0.4) continue;
+            if (Math.random() > 0.4 + distanceFactor * 0.3) continue;
             
             // Create rolling hills with noise
-            const noise = Math.sin(x * 0.02) * Math.cos(z * 0.02) * 3;
-            const hillNoise = Math.sin(x * 0.005) * Math.sin(z * 0.005) * 8;
-            const microNoise = Math.sin(x * 0.1) * Math.cos(z * 0.1) * 0.5;
+            const noise = Math.sin(x * 0.03) * Math.cos(z * 0.03) * 2;
+            const hillNoise = Math.sin(x * 0.008) * Math.sin(z * 0.008) * 6;
+            const microNoise = Math.sin(x * 0.08) * Math.cos(z * 0.08) * 0.3;
             const y = (noise + hillNoise + microNoise) * distanceFactor;
             
             // Create the block
@@ -67,11 +67,11 @@ function generateDramaticTerrain() {
             block.setAttribute('depth', blockSize);
             
             // Atmospheric perspective - greener up close, bluer/grayer far away
-            const atmosphericBlue = Math.min(1, distance * 0.01);
-            const greenIntensity = Math.max(0.3, 1 - atmosphericBlue * 0.7);
-            const redChannel = Math.floor(127 * atmosphericBlue + 60 * greenIntensity);
-            const greenChannel = Math.floor(252 * greenIntensity + 100 * atmosphericBlue);
-            const blueChannel = Math.floor(0 * greenIntensity + 180 * atmosphericBlue);
+            const atmosphericBlue = Math.min(1, distance * 0.008);
+            const greenIntensity = Math.max(0.4, 1 - atmosphericBlue * 0.6);
+            const redChannel = Math.floor(120 * atmosphericBlue + 70 * greenIntensity);
+            const greenChannel = Math.floor(240 * greenIntensity + 120 * atmosphericBlue);
+            const blueChannel = Math.floor(20 * greenIntensity + 160 * atmosphericBlue);
             
             const color = `#${redChannel.toString(16).padStart(2, '0')}${greenChannel.toString(16).padStart(2, '0')}${blueChannel.toString(16).padStart(2, '0')}`;
             block.setAttribute('color', color);
@@ -80,34 +80,17 @@ function generateDramaticTerrain() {
             terrain.appendChild(block);
         }
     }
-    
-    // Add some giant foreground grass elements for scale
-    for (let i = 0; i < 15; i++) {
-        const x = (Math.random() - 0.5) * 40;
-        const z = Math.random() * 3 + 6; // Very close to camera
-        const height = 3 + Math.random() * 4;
-        
-        const grass = document.createElement('a-box');
-        grass.setAttribute('position', `${x} ${height/2} ${z}`);
-        grass.setAttribute('width', '0.3');
-        grass.setAttribute('height', height);
-        grass.setAttribute('depth', '0.3');
-        grass.setAttribute('color', '#228B22');
-        grass.setAttribute('opacity', '0.8');
-        
-        terrain.appendChild(grass);
-    }
 }
 
 function generateAtmosphericTrees() {
     const trees = document.getElementById('trees');
     
     // Generate trees at various distances with proper scaling
-    for (let i = 0; i < 30; i++) {
-        const x = (Math.random() - 0.5) * 100;
-        const z = Math.random() * -80 - 10; // From close to very far
-        const distance = Math.abs(z - 5) + 1;
-        const scale = Math.max(0.1, 1 / (distance * 0.03 + 1));
+    for (let i = 0; i < 25; i++) {
+        const x = (Math.random() - 0.5) * 80;
+        const z = Math.random() * -70 - 5; // From close to very far
+        const distance = Math.abs(z - 15) + 1;
+        const scale = Math.max(0.2, 1 / (distance * 0.025 + 1));
         
         const treeGroup = document.createElement('a-entity');
         const y = getTerrainHeight(x, z) + scale;
@@ -166,11 +149,11 @@ function generateMagicalFlowers() {
     const flowers = document.getElementById('flowers');
     
     // Generate flowers at various scales
-    for (let i = 0; i < 40; i++) {
-        const x = (Math.random() - 0.5) * 80;
-        const z = Math.random() * -60 - 5; // From close to far
-        const distance = Math.abs(z - 5) + 1;
-        const scale = Math.max(0.05, 1 / (distance * 0.04 + 1));
+    for (let i = 0; i < 35; i++) {
+        const x = (Math.random() - 0.5) * 70;
+        const z = Math.random() * -50 - 5; // From close to far
+        const distance = Math.abs(z - 15) + 1;
+        const scale = Math.max(0.1, 1 / (distance * 0.03 + 1));
         const y = getTerrainHeight(x, z) + scale * 0.5;
         
         const flowerGroup = document.createElement('a-entity');
@@ -256,12 +239,12 @@ function generateDreamyClouds() {
 }
 
 function getTerrainHeight(x, z) {
-    const distance = Math.abs(z - 5) + 1;
-    const distanceFactor = 1 / (distance * 0.05 + 1);
+    const distance = Math.abs(z - 15) + 1;
+    const distanceFactor = 1 / (distance * 0.03 + 1);
     
-    const noise = Math.sin(x * 0.02) * Math.cos(z * 0.02) * 3;
-    const hillNoise = Math.sin(x * 0.005) * Math.sin(z * 0.005) * 8;
-    const microNoise = Math.sin(x * 0.1) * Math.cos(z * 0.1) * 0.5;
+    const noise = Math.sin(x * 0.03) * Math.cos(z * 0.03) * 2;
+    const hillNoise = Math.sin(x * 0.008) * Math.sin(z * 0.008) * 6;
+    const microNoise = Math.sin(x * 0.08) * Math.cos(z * 0.08) * 0.3;
     
     return (noise + hillNoise + microNoise) * distanceFactor;
 }
@@ -353,10 +336,10 @@ function createGravestone3D(screenX, screenY, width, height) {
     const y = -((screenY - rect.top) / rect.height) * 2 + 1;
     
     // Map screen coordinates to world with dramatic perspective
-    const worldX = x * 40;
-    const worldZ = (y * 30) - 20; // Further back for better placement
-    const distance = Math.abs(worldZ - 5) + 1;
-    const scale = Math.max(0.3, 2 / (distance * 0.03 + 1)); // Scale with distance
+    const worldX = x * 35;
+    const worldZ = (y * 40) - 10; // Adjusted for elevated view
+    const distance = Math.abs(worldZ - 15) + 1;
+    const scale = Math.max(0.4, 2 / (distance * 0.025 + 1)); // Scale with distance
     const worldY = getTerrainHeight(worldX, worldZ) + scale;
     
     const id = `grave_${gravestoneIdCounter++}`;
@@ -372,7 +355,7 @@ function createGravestone3D(screenX, screenY, width, height) {
     const stoneHeight = scale * Math.min(Math.max(height / 40, 1), 4);
     
     // Atmospheric color for stone
-    const atmosphericFactor = Math.min(1, distance * 0.008);
+    const atmosphericFactor = Math.min(1, distance * 0.006);
     const stoneColor = `rgb(${Math.floor(192 + 50 * atmosphericFactor)}, ${Math.floor(192 + 50 * atmosphericFactor)}, ${Math.floor(192 + 60 * atmosphericFactor)})`;
     
     // Base
@@ -506,8 +489,8 @@ function updateGravestone3D(gravestone, inscription) {
 function createFlowerBurst3D(gravestone) {
     const pos = gravestone.getAttribute('position');
     const flowers = document.getElementById('flowers');
-    const distance = Math.abs(parseFloat(pos.z) - 5) + 1;
-    const scale = Math.max(0.1, 1 / (distance * 0.03 + 1));
+    const distance = Math.abs(parseFloat(pos.z) - 15) + 1;
+    const scale = Math.max(0.1, 1 / (distance * 0.025 + 1));
     
     for (let i = 0; i < 8; i++) {
         const angle = (Math.PI * 2 * i) / 8;
@@ -553,8 +536,8 @@ function loadGravestones() {
             const gravestonesContainer = document.getElementById('gravestones-3d');
             
             // Recalculate atmospheric color
-            const distance = Math.abs(data.z - 5) + 1;
-            const atmosphericFactor = Math.min(1, distance * 0.008);
+            const distance = Math.abs(data.z - 15) + 1;
+            const atmosphericFactor = Math.min(1, distance * 0.006);
             const stoneColor = `rgb(${Math.floor(192 + 50 * atmosphericFactor)}, ${Math.floor(192 + 50 * atmosphericFactor)}, ${Math.floor(192 + 60 * atmosphericFactor)})`;
             
             const gravestone = document.createElement('a-entity');
