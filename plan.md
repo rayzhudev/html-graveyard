@@ -14,7 +14,7 @@ An interactive "Garden of Memories" cemetery built during HTML in Hyde #1. Users
 - **Core functionality**: ✅ Complete
 - **Visual design**: ✅ Complete with 3D clouds and 2D cemetery
 - **Deployment**: ✅ Fixed - Added package.json with build script
-- **Mobile experience**: ✅ Fixed - VR popups disabled
+- **Mobile experience**: ✅ Complete - VR popups disabled + double-tap tombstones
 
 ## Recent Changes
 
@@ -31,6 +31,11 @@ An interactive "Garden of Memories" cemetery built during HTML in Hyde #1. Users
   - Twitter Card support for better Twitter previews
   - Custom og-image.png showing the cemetery with tombstones
   - SEO-optimized meta tags and descriptions
+- ✅ **Added mobile double-tap support** - Enhanced mobile tombstone creation:
+  - Double-tap anywhere to create standard-sized tombstone (120x150px)
+  - Touch drag still works for custom-sized tombstones
+  - Visual feedback animation on double-tap
+  - Prevents conflicts between touch and mouse events
 
 ## Next Steps
 
@@ -50,7 +55,7 @@ An interactive "Garden of Memories" cemetery built during HTML in Hyde #1. Users
 ```
 html-graveyard/
 ├── index.html          # Main page with 3D clouds and 2D cemetery
-├── script.js           # Interactive functionality (477 lines)
+├── script.js           # Interactive functionality (570+ lines)
 ├── styles.css          # Styling with peaceful garden theme (528 lines)
 ├── og-image.png        # OpenGraph/social media preview image (1.7MB)
 ├── package.json        # Build configuration for deployment
@@ -66,6 +71,6 @@ html-graveyard/
 - 3D floating clouds using A-Frame
 - Layered 2D cemetery with hills, trees, flowers
 - Modal for inscriptions
-- Mobile responsive design with VR functionality disabled
+- Mobile responsive design with VR functionality disabled and double-tap tombstone creation
 - Auto-save functionality
 - OpenGraph/social media preview support

@@ -7,6 +7,10 @@ let dragStartX = 0;
 let dragStartY = 0;
 let dragIndicator = null;
 
+// Mobile double-tap detection
+let lastTap = 0;
+let tapTimeout = null;
+
 document.addEventListener('DOMContentLoaded', () => {
     dragIndicator = document.getElementById('dragIndicator');
 
@@ -123,9 +127,15 @@ function generate3DClouds() {
 function setup2DDragAndDrop() {
     const cemetery = document.querySelector('.cemetery-2d');
 
+    // Desktop mouse events
     cemetery.addEventListener('mousedown', handleMouseDown);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+
+    // Mobile touch events
+    cemetery.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd, { passive: false });
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
@@ -194,6 +204,118 @@ function handleMouseUp(e) {
 function cancelDrag() {
     isDragging = false;
     dragIndicator.classList.remove('active');
+}
+
+// Touch event handlers for mobile support
+function handleTouchStart(e) {
+    // Don't start drag if touching modal or existing tombstone
+    if (e.target.closest('.modal') || e.target.closest('.tombstone-2d')) {
+        return;
+    }
+
+    const touch = e.touches[0];
+    const currentTime = Date.now();
+
+    // Double-tap detection
+    if (currentTime - lastTap < 300) {
+        // Double tap detected - create standard size tombstone
+        e.preventDefault();
+        createStandardTombstone(touch.clientX, touch.clientY);
+        return;
+    }
+
+    lastTap = currentTime;
+
+    // Start drag (similar to mouse)
+    isDragging = true;
+    dragStartX = touch.clientX;
+    dragStartY = touch.clientY;
+
+    dragIndicator.style.left = dragStartX + 'px';
+    dragIndicator.style.top = dragStartY + 'px';
+    dragIndicator.style.width = '0px';
+    dragIndicator.style.height = '0px';
+    dragIndicator.classList.add('active');
+
+    e.preventDefault();
+}
+
+function handleTouchMove(e) {
+    if (!isDragging) return;
+
+    const touch = e.touches[0];
+    const currentX = touch.clientX;
+    const currentY = touch.clientY;
+
+    const width = Math.abs(currentX - dragStartX);
+    const height = Math.abs(currentY - dragStartY);
+
+    dragIndicator.style.left = Math.min(dragStartX, currentX) + 'px';
+    dragIndicator.style.top = Math.min(dragStartY, currentY) + 'px';
+    dragIndicator.style.width = width + 'px';
+    dragIndicator.style.height = height + 'px';
+
+    e.preventDefault();
+}
+
+function handleTouchEnd(e) {
+    if (!isDragging) return;
+
+    const touch = e.changedTouches[0];
+    const width = Math.abs(touch.clientX - dragStartX);
+    const height = Math.abs(touch.clientY - dragStartY);
+
+    // Only create tombstone if drag is significant (not a tap)
+    if (width > 30 && height > 40) {
+        const centerX = (touch.clientX + dragStartX) / 2;
+        const centerY = (touch.clientY + dragStartY) / 2;
+
+        create2DTombstone(centerX, centerY, width, height);
+    }
+
+    cancelDrag();
+    e.preventDefault();
+}
+
+function createStandardTombstone(screenX, screenY) {
+    // Create a standard-sized tombstone (120x150px)
+    const standardWidth = 120;
+    const standardHeight = 150;
+
+    create2DTombstone(screenX, screenY, standardWidth, standardHeight);
+
+    // Show a brief visual feedback for the double-tap
+    showDoubleTapFeedback(screenX, screenY);
+}
+
+function showDoubleTapFeedback(x, y) {
+    const feedback = document.createElement('div');
+    feedback.className = 'double-tap-feedback';
+    feedback.style.position = 'fixed';
+    feedback.style.left = (x - 15) + 'px';
+    feedback.style.top = (y - 15) + 'px';
+    feedback.style.width = '30px';
+    feedback.style.height = '30px';
+    feedback.style.borderRadius = '50%';
+    feedback.style.backgroundColor = 'rgba(255, 255, 255, 0.8)';
+    feedback.style.border = '2px solid #8B4513';
+    feedback.style.pointerEvents = 'none';
+    feedback.style.zIndex = '1000';
+    feedback.style.transform = 'scale(0)';
+    feedback.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+
+    document.body.appendChild(feedback);
+
+    // Animate the feedback
+    requestAnimationFrame(() => {
+        feedback.style.transform = 'scale(1.5)';
+        feedback.style.opacity = '0';
+    });
+
+    // Remove feedback after animation
+    setTimeout(() => {
+        document.body.removeChild(feedback);
+    }, 300);
 }
 
 function create2DTombstone(screenX, screenY, width, height) {
