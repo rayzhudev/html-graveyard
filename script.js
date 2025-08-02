@@ -1,263 +1,75 @@
-let currentGravestone = null;
-const gravestones = {};
-let gravestoneIdCounter = 0;
+let currentTombstone = null;
+const tombstones = {};
+let tombstoneIdCounter = 0;
 
 let isDragging = false;
 let dragStartX = 0;
 let dragStartY = 0;
 let dragIndicator = null;
-let scene = null;
-
-// Register A-Frame cursor listener component
-AFRAME.registerComponent('cursor-listener', {
-    init: function () {
-        this.el.addEventListener('click', (e) => {
-            if (this.el.classList.contains('gravestone-3d')) {
-                openInscriptionModal(this.el);
-            }
-        });
-    }
-});
 
 document.addEventListener('DOMContentLoaded', () => {
-    scene = document.querySelector('a-scene');
     dragIndicator = document.getElementById('dragIndicator');
     
-    scene.addEventListener('loaded', () => {
-        generateDramaticTerrain();
-        generateAtmosphericTrees();
-        generateMagicalFlowers();
-        generateDreamyClouds();
-        loadGravestones();
-        
-        // Wait a bit more for canvas to be ready
-        setTimeout(() => {
-            setupDragAndDrop();
-        }, 100);
-    });
+    // Generate 3D clouds in the small A-Frame section
+    generate3DClouds();
+    
+    // Load existing tombstones
+    load2DTombstones();
+    
+    // Setup drag and drop for 2D
+    setup2DDragAndDrop();
 });
 
-function generateDramaticTerrain() {
-    const terrain = document.getElementById('terrain');
+function generate3DClouds() {
+    const cloudsContainer = document.getElementById('clouds-3d');
     
-    // Create dramatic perspective terrain - from close to distant horizon
-    for (let z = 15; z >= -80; z -= 0.4) { // Adjusted range for elevated view
-        for (let x = -50; x <= 50; x += 0.6) {
-            // Distance from camera affects everything
-            const distance = Math.abs(z - 15) + 1;
-            const distanceFactor = 1 / (distance * 0.03 + 1);
-            
-            // Progressive scaling - larger blocks up close, smaller far away
-            const blockSize = Math.max(0.2, 2 * distanceFactor);
-            
-            // Skip blocks randomly based on distance for performance
-            if (Math.random() > 0.4 + distanceFactor * 0.3) continue;
-            
-            // Create rolling hills with noise
-            const noise = Math.sin(x * 0.03) * Math.cos(z * 0.03) * 2;
-            const hillNoise = Math.sin(x * 0.008) * Math.sin(z * 0.008) * 6;
-            const microNoise = Math.sin(x * 0.08) * Math.cos(z * 0.08) * 0.3;
-            const y = (noise + hillNoise + microNoise) * distanceFactor;
-            
-            // Create the block
-            const block = document.createElement('a-box');
-            block.setAttribute('position', `${x} ${y} ${z}`);
-            block.setAttribute('width', blockSize);
-            block.setAttribute('height', blockSize);
-            block.setAttribute('depth', blockSize);
-            
-            // Atmospheric perspective - greener up close, bluer/grayer far away
-            const atmosphericBlue = Math.min(1, distance * 0.008);
-            const greenIntensity = Math.max(0.4, 1 - atmosphericBlue * 0.6);
-            const redChannel = Math.floor(120 * atmosphericBlue + 70 * greenIntensity);
-            const greenChannel = Math.floor(240 * greenIntensity + 120 * atmosphericBlue);
-            const blueChannel = Math.floor(20 * greenIntensity + 160 * atmosphericBlue);
-            
-            const color = `#${redChannel.toString(16).padStart(2, '0')}${greenChannel.toString(16).padStart(2, '0')}${blueChannel.toString(16).padStart(2, '0')}`;
-            block.setAttribute('color', color);
-            block.setAttribute('shadow', 'receive: true');
-            
-            terrain.appendChild(block);
-        }
-    }
-}
-
-function generateAtmosphericTrees() {
-    const trees = document.getElementById('trees');
-    
-    // Generate trees at various distances with proper scaling
-    for (let i = 0; i < 25; i++) {
-        const x = (Math.random() - 0.5) * 80;
-        const z = Math.random() * -70 - 5; // From close to very far
-        const distance = Math.abs(z - 15) + 1;
-        const scale = Math.max(0.2, 1 / (distance * 0.025 + 1));
-        
-        const treeGroup = document.createElement('a-entity');
-        const y = getTerrainHeight(x, z) + scale;
-        
-        // Trunk height scales with distance
-        const trunkHeight = Math.max(1, 4 * scale);
-        
-        // Create trunk blocks
-        for (let j = 0; j < Math.max(1, Math.floor(trunkHeight)); j++) {
-            const trunk = document.createElement('a-box');
-            trunk.setAttribute('position', `${x} ${y + j * scale} ${z}`);
-            trunk.setAttribute('width', scale);
-            trunk.setAttribute('height', scale);
-            trunk.setAttribute('depth', scale);
-            
-            // Atmospheric color for trunk
-            const atmosphericFactor = Math.min(1, distance * 0.008);
-            const brownness = 1 - atmosphericFactor * 0.5;
-            const trunkColor = `rgb(${Math.floor(139 * brownness + 100 * atmosphericFactor)}, ${Math.floor(69 * brownness + 100 * atmosphericFactor)}, ${Math.floor(19 * brownness + 150 * atmosphericFactor)})`;
-            trunk.setAttribute('color', trunkColor);
-            treeGroup.appendChild(trunk);
-        }
-        
-        // Create leaf crown
-        const leafPositions = [
-            {x: 0, y: trunkHeight, z: 0}, {x: scale, y: trunkHeight, z: 0}, {x: -scale, y: trunkHeight, z: 0},
-            {x: 0, y: trunkHeight, z: scale}, {x: 0, y: trunkHeight, z: -scale},
-            {x: 0, y: trunkHeight + scale, z: 0}, {x: scale/2, y: trunkHeight + scale, z: 0}, {x: -scale/2, y: trunkHeight + scale, z: 0},
-            {x: 0, y: trunkHeight + scale, z: scale/2}, {x: 0, y: trunkHeight + scale, z: -scale/2},
-            {x: 0, y: trunkHeight + scale * 2, z: 0}
-        ];
-        
-        leafPositions.forEach(leaf => {
-            if (Math.random() > 0.3) { // Random leaf placement
-                const leafBlock = document.createElement('a-box');
-                leafBlock.setAttribute('position', `${x + leaf.x} ${y + leaf.y} ${z + leaf.z}`);
-                leafBlock.setAttribute('width', scale * 0.8);
-                leafBlock.setAttribute('height', scale * 0.8);
-                leafBlock.setAttribute('depth', scale * 0.8);
-                
-                // Atmospheric color for leaves
-                const atmosphericFactor = Math.min(1, distance * 0.008);
-                const greenness = 1 - atmosphericFactor * 0.4;
-                const leafColor = `rgb(${Math.floor(34 * greenness + 120 * atmosphericFactor)}, ${Math.floor(139 * greenness + 140 * atmosphericFactor)}, ${Math.floor(34 * greenness + 160 * atmosphericFactor)})`;
-                leafBlock.setAttribute('color', leafColor);
-                leafBlock.setAttribute('opacity', '0.9');
-                treeGroup.appendChild(leafBlock);
-            }
-        });
-        
-        trees.appendChild(treeGroup);
-    }
-}
-
-function generateMagicalFlowers() {
-    const flowers = document.getElementById('flowers');
-    
-    // Generate flowers at various scales
-    for (let i = 0; i < 35; i++) {
-        const x = (Math.random() - 0.5) * 70;
-        const z = Math.random() * -50 - 5; // From close to far
-        const distance = Math.abs(z - 15) + 1;
-        const scale = Math.max(0.1, 1 / (distance * 0.03 + 1));
-        const y = getTerrainHeight(x, z) + scale * 0.5;
-        
-        const flowerGroup = document.createElement('a-entity');
-        
-        // Stem
-        const stem = document.createElement('a-box');
-        stem.setAttribute('position', `${x} ${y} ${z}`);
-        stem.setAttribute('width', scale * 0.1);
-        stem.setAttribute('height', scale * 0.8);
-        stem.setAttribute('depth', scale * 0.1);
-        stem.setAttribute('color', '#228B22');
-        flowerGroup.appendChild(stem);
-        
-        // Flower petals
-        const flowerColors = ['#FFD700', '#FF69B4', '#DDA0DD', '#87CEEB', '#FFA500', '#FF1493', '#BA55D3', '#F0E68C'];
-        const color = flowerColors[Math.floor(Math.random() * flowerColors.length)];
-        
-        // Create multiple petals for larger flowers up close
-        const petalCount = Math.max(4, Math.floor(8 * scale));
-        for (let p = 0; p < petalCount; p++) {
-            const angle = (Math.PI * 2 * p) / petalCount;
-            const petalX = x + Math.cos(angle) * scale * 0.3;
-            const petalZ = z + Math.sin(angle) * scale * 0.3;
-            
-            const petal = document.createElement('a-box');
-            petal.setAttribute('position', `${petalX} ${y + scale * 0.8} ${petalZ}`);
-            petal.setAttribute('width', scale * 0.4);
-            petal.setAttribute('height', scale * 0.4);
-            petal.setAttribute('depth', scale * 0.4);
-            petal.setAttribute('color', color);
-            flowerGroup.appendChild(petal);
-        }
-        
-        flowers.appendChild(flowerGroup);
-    }
-}
-
-function generateDreamyClouds() {
-    const clouds = document.getElementById('clouds');
-    
-    // Create more dramatic cloud layers
-    for (let i = 0; i < 8; i++) {
+    // Create floating 3D clouds
+    for (let i = 0; i < 6; i++) {
         const cloudGroup = document.createElement('a-entity');
-        const x = (Math.random() - 0.5) * 120;
-        const y = 12 + Math.random() * 15 + i * 2; // Multiple cloud layers
-        const z = Math.random() * -40 - 20; // Various distances
-        const distance = Math.abs(z) + 20;
-        const scale = Math.max(0.3, 8 / (distance * 0.05 + 1));
+        const x = (Math.random() - 0.5) * 80;
+        const y = -5 + Math.random() * 10;
+        const z = -20 - Math.random() * 40;
+        const scale = 0.8 + Math.random() * 1.2;
         
         // Create cloud from multiple blocks
         const cloudBlocks = [
-            {x: 0, y: 0, z: 0}, {x: 1, y: 0, z: 0}, {x: -1, y: 0, z: 0},
-            {x: 0, y: 0, z: 1}, {x: 0, y: 0, z: -1}, {x: 2, y: 0, z: 0}, {x: -2, y: 0, z: 0},
-            {x: 1, y: 0, z: 1}, {x: -1, y: 0, z: -1}, {x: 0, y: 1, z: 0},
-            {x: 1, y: 1, z: 0}, {x: -1, y: 1, z: 0}
+            {x: 0, y: 0, z: 0}, {x: 2, y: 0, z: 0}, {x: -2, y: 0, z: 0},
+            {x: 0, y: 0, z: 2}, {x: 0, y: 0, z: -2}, {x: 4, y: 0, z: 0}, {x: -4, y: 0, z: 0},
+            {x: 2, y: 0, z: 2}, {x: -2, y: 0, z: -2}, {x: 0, y: 2, z: 0},
+            {x: 2, y: 2, z: 0}, {x: -2, y: 2, z: 0}, {x: 0, y: 2, z: 2}
         ];
         
         cloudBlocks.forEach(block => {
-            if (Math.random() > 0.2) {
+            if (Math.random() > 0.15) {
                 const cloudBlock = document.createElement('a-box');
                 cloudBlock.setAttribute('position', `${x + block.x * scale} ${y + block.y * scale} ${z + block.z * scale}`);
-                cloudBlock.setAttribute('width', scale * 2);
-                cloudBlock.setAttribute('height', scale * 1.5);
-                cloudBlock.setAttribute('depth', scale * 2);
+                cloudBlock.setAttribute('width', scale * 3);
+                cloudBlock.setAttribute('height', scale * 2.5);
+                cloudBlock.setAttribute('depth', scale * 3);
                 cloudBlock.setAttribute('color', '#FFFFFF');
-                cloudBlock.setAttribute('opacity', Math.max(0.4, 0.9 - distance * 0.01));
+                cloudBlock.setAttribute('opacity', 0.7 + Math.random() * 0.2);
                 cloudGroup.appendChild(cloudBlock);
             }
         });
         
-        // Animate cloud movement with different speeds
-        const speed = 60000 + Math.random() * 60000;
+        // Animate cloud movement
+        const speed = 80000 + Math.random() * 40000;
         cloudGroup.setAttribute('animation', {
             property: 'position',
-            to: `${x + 150} ${y} ${z}`,
+            to: `${x + 120} ${y} ${z}`,
             dur: speed,
             loop: true,
             easing: 'linear'
         });
         
-        clouds.appendChild(cloudGroup);
+        cloudsContainer.appendChild(cloudGroup);
     }
 }
 
-function getTerrainHeight(x, z) {
-    const distance = Math.abs(z - 15) + 1;
-    const distanceFactor = 1 / (distance * 0.03 + 1);
+function setup2DDragAndDrop() {
+    const cemetery = document.querySelector('.cemetery-2d');
     
-    const noise = Math.sin(x * 0.03) * Math.cos(z * 0.03) * 2;
-    const hillNoise = Math.sin(x * 0.008) * Math.sin(z * 0.008) * 6;
-    const microNoise = Math.sin(x * 0.08) * Math.cos(z * 0.08) * 0.3;
-    
-    return (noise + hillNoise + microNoise) * distanceFactor;
-}
-
-function setupDragAndDrop() {
-    const canvas = scene.canvas || scene.querySelector('canvas');
-    
-    if (canvas) {
-        canvas.addEventListener('mousedown', handleMouseDown);
-    } else {
-        scene.addEventListener('mousedown', handleMouseDown);
-    }
-    
+    cemetery.addEventListener('mousedown', handleMouseDown);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
     
@@ -273,7 +85,8 @@ function setupDragAndDrop() {
 }
 
 function handleMouseDown(e) {
-    if (e.target.closest('.modal') || e.target.closest('.gravestone-3d')) {
+    // Don't start drag if clicking on modal or existing tombstone
+    if (e.target.closest('.modal') || e.target.closest('.tombstone-2d')) {
         return;
     }
     
@@ -314,11 +127,11 @@ function handleMouseUp(e) {
     const width = Math.abs(e.clientX - dragStartX);
     const height = Math.abs(e.clientY - dragStartY);
     
-    if (width > 20 && height > 20) {
+    if (width > 30 && height > 40) {
         const centerX = (e.clientX + dragStartX) / 2;
         const centerY = (e.clientY + dragStartY) / 2;
         
-        createGravestone3D(centerX, centerY, width, height);
+        create2DTombstone(centerX, centerY, width, height);
     }
     
     cancelDrag();
@@ -329,118 +142,91 @@ function cancelDrag() {
     dragIndicator.classList.remove('active');
 }
 
-function createGravestone3D(screenX, screenY, width, height) {
-    const canvas = scene.canvas || scene.querySelector('canvas');
-    const rect = canvas ? canvas.getBoundingClientRect() : scene.getBoundingClientRect();
-    const x = ((screenX - rect.left) / rect.width) * 2 - 1;
-    const y = -((screenY - rect.top) / rect.height) * 2 + 1;
+function create2DTombstone(screenX, screenY, width, height) {
+    const cemetery = document.querySelector('.cemetery-2d');
+    const rect = cemetery.getBoundingClientRect();
     
-    // Map screen coordinates to world with dramatic perspective
-    const worldX = x * 35;
-    const worldZ = (y * 40) - 10; // Adjusted for elevated view
-    const distance = Math.abs(worldZ - 15) + 1;
-    const scale = Math.max(0.4, 2 / (distance * 0.025 + 1)); // Scale with distance
-    const worldY = getTerrainHeight(worldX, worldZ) + scale;
+    // Convert screen coordinates to relative position within cemetery
+    const relativeX = ((screenX - rect.left) / rect.width) * 100;
+    const relativeY = ((screenY - rect.top) / rect.height) * 100;
     
-    const id = `grave_${gravestoneIdCounter++}`;
-    const gravestonesContainer = document.getElementById('gravestones-3d');
+    // Don't place tombstones too high up (in the sky area)
+    if (relativeY < 50) return;
     
-    const gravestone = document.createElement('a-entity');
-    gravestone.setAttribute('id', id);
-    gravestone.setAttribute('class', 'gravestone-3d');
-    gravestone.setAttribute('position', `${worldX} ${worldY} ${worldZ}`);
+    const id = `tomb_${tombstoneIdCounter++}`;
+    const tombstonesContainer = document.getElementById('tombstonesContainer');
     
-    // Scale tombstone based on distance and drag size
-    const finalScale = scale * Math.min(Math.max(width / 80, 0.5), 2);
-    const stoneHeight = scale * Math.min(Math.max(height / 40, 1), 4);
+    // Scale based on position (perspective effect)
+    const depthFactor = (relativeY - 50) / 50; // 0 at middle, 1 at bottom
+    const scale = 0.6 + (depthFactor * 0.8); // Scale from 0.6 to 1.4
     
-    // Atmospheric color for stone
-    const atmosphericFactor = Math.min(1, distance * 0.006);
-    const stoneColor = `rgb(${Math.floor(192 + 50 * atmosphericFactor)}, ${Math.floor(192 + 50 * atmosphericFactor)}, ${Math.floor(192 + 60 * atmosphericFactor)})`;
+    // Create tombstone element
+    const tombstone = document.createElement('div');
+    tombstone.className = 'tombstone-2d';
+    tombstone.id = id;
+    tombstone.style.left = relativeX + '%';
+    tombstone.style.top = relativeY + '%';
+    tombstone.style.transform = `translate(-50%, -100%) scale(${scale})`;
     
-    // Base
-    const base = document.createElement('a-box');
-    base.setAttribute('position', '0 0 0');
-    base.setAttribute('width', finalScale);
-    base.setAttribute('height', scale * 0.2);
-    base.setAttribute('depth', scale * 0.5);
-    base.setAttribute('color', stoneColor);
-    base.setAttribute('shadow', 'cast: true; receive: true');
-    gravestone.appendChild(base);
+    // Constrain size based on drag
+    const stoneWidth = Math.min(Math.max(width * 0.3, 60), 120);
+    const stoneHeight = Math.min(Math.max(height * 0.3, 80), 150);
     
-    // Main stone
-    const mainStone = document.createElement('a-box');
-    mainStone.setAttribute('position', `0 ${stoneHeight/2 + scale * 0.1} 0`);
-    mainStone.setAttribute('width', finalScale * 0.8);
-    mainStone.setAttribute('height', stoneHeight);
-    mainStone.setAttribute('depth', scale * 0.3);
-    mainStone.setAttribute('color', stoneColor);
-    mainStone.setAttribute('shadow', 'cast: true; receive: true');
-    gravestone.appendChild(mainStone);
+    // Create tombstone parts
+    const stoneBase = document.createElement('div');
+    stoneBase.className = 'stone-base';
+    stoneBase.style.width = stoneWidth + 'px';
+    stoneBase.style.height = Math.floor(stoneHeight * 0.3) + 'px';
     
-    // Top stone
-    const topStone = document.createElement('a-box');
-    topStone.setAttribute('position', `0 ${stoneHeight + scale * 0.3} 0`);
-    topStone.setAttribute('width', finalScale * 0.6);
-    topStone.setAttribute('height', scale * 0.4);
-    topStone.setAttribute('depth', scale * 0.3);
-    topStone.setAttribute('color', stoneColor);
-    topStone.setAttribute('shadow', 'cast: true; receive: true');
-    gravestone.appendChild(topStone);
+    const stoneBody = document.createElement('div');
+    stoneBody.className = 'stone-body';
+    stoneBody.style.width = stoneWidth + 'px';
+    stoneBody.style.height = Math.floor(stoneHeight * 0.7) + 'px';
     
-    // Text
-    const text = document.createElement('a-text');
-    text.setAttribute('value', 'Click to\ninscribe');
-    text.setAttribute('position', `0 ${stoneHeight/2 + scale * 0.1} ${scale * 0.16}`);
-    text.setAttribute('align', 'center');
-    text.setAttribute('color', '#333333');
-    text.setAttribute('width', Math.max(2, 4 * scale));
-    text.setAttribute('wrap-count', 10);
-    gravestone.appendChild(text);
+    const epitaph = document.createElement('div');
+    epitaph.className = 'epitaph';
+    epitaph.textContent = 'Click to inscribe...';
     
-    gravestonesContainer.appendChild(gravestone);
+    const dates = document.createElement('div');
+    dates.className = 'dates';
+    dates.textContent = '????-????';
+    
+    stoneBody.appendChild(epitaph);
+    stoneBody.appendChild(dates);
+    tombstone.appendChild(stoneBase);
+    tombstone.appendChild(stoneBody);
+    tombstonesContainer.appendChild(tombstone);
     
     // Add click handler
-    gravestone.setAttribute('cursor-listener', '');
+    tombstone.addEventListener('click', () => openInscriptionModal(tombstone));
     
-    // Store gravestone data
-    gravestones[id] = {
-        x: worldX,
-        y: worldY,
-        z: worldZ,
-        scale: finalScale,
+    // Store tombstone data
+    tombstones[id] = {
+        x: relativeX,
+        y: relativeY,
+        width: stoneWidth,
         height: stoneHeight,
-        baseScale: scale,
+        scale: scale,
         inscription: null
     };
     
-    saveGravestones();
-    animateGravestoneAppearance(gravestone);
+    save2DTombstones();
+    animateTombstoneAppearance(tombstone);
 }
 
-function animateGravestoneAppearance(gravestone) {
-    const pos = gravestone.getAttribute('position');
-    const startY = pos.y - 2;
-    gravestone.setAttribute('position', `${pos.x} ${startY} ${pos.z}`);
-    gravestone.setAttribute('scale', '0 0 0');
+function animateTombstoneAppearance(tombstone) {
+    tombstone.style.opacity = '0';
+    tombstone.style.transform = tombstone.style.transform + ' translateY(20px)';
     
-    gravestone.setAttribute('animation__position', {
-        property: 'position',
-        to: `${pos.x} ${pos.y} ${pos.z}`,
-        dur: 800,
-        easing: 'easeOutBack'
-    });
-    
-    gravestone.setAttribute('animation__scale', {
-        property: 'scale',
-        to: '1 1 1',
-        dur: 800,
-        easing: 'easeOutBack'
-    });
+    setTimeout(() => {
+        tombstone.style.transition = 'all 0.6s ease-out';
+        tombstone.style.opacity = '1';
+        tombstone.style.transform = tombstone.style.transform.replace('translateY(20px)', 'translateY(0px)');
+    }, 10);
 }
 
-function openInscriptionModal(gravestone) {
-    currentGravestone = gravestone;
+function openInscriptionModal(tombstone) {
+    currentTombstone = tombstone;
     const modal = document.getElementById('inscriptionModal');
     modal.classList.add('active');
 }
@@ -449,6 +235,7 @@ function closeModal() {
     const modal = document.getElementById('inscriptionModal');
     modal.classList.remove('active');
     document.getElementById('inscriptionForm').reset();
+    currentTombstone = null;
 }
 
 document.getElementById('inscriptionForm').addEventListener('submit', (e) => {
@@ -467,137 +254,123 @@ document.getElementById('inscriptionForm').addEventListener('submit', (e) => {
         timestamp: Date.now()
     };
     
-    const id = currentGravestone.getAttribute('id');
-    if (gravestones[id]) {
-        gravestones[id].inscription = inscription;
+    const id = currentTombstone.id;
+    if (tombstones[id]) {
+        tombstones[id].inscription = inscription;
     }
     
-    updateGravestone3D(currentGravestone, inscription);
-    saveGravestones();
+    update2DTombstone(currentTombstone, inscription);
+    save2DTombstones();
     closeModal();
     
-    createFlowerBurst3D(currentGravestone);
+    create2DFlowerBurst(currentTombstone);
 });
 
-function updateGravestone3D(gravestone, inscription) {
-    const text = gravestone.querySelector('a-text');
-    const textValue = `${inscription.name}\n${inscription.birthYear}-${inscription.deathYear}\n${inscription.epitaph}`;
-    text.setAttribute('value', textValue);
-    text.setAttribute('wrap-count', 15);
+function update2DTombstone(tombstone, inscription) {
+    const epitaphElement = tombstone.querySelector('.epitaph');
+    const datesElement = tombstone.querySelector('.dates');
+    
+    epitaphElement.innerHTML = `${inscription.name}<br>${inscription.epitaph}`;
+    datesElement.textContent = `${inscription.birthYear}-${inscription.deathYear}`;
 }
 
-function createFlowerBurst3D(gravestone) {
-    const pos = gravestone.getAttribute('position');
-    const flowers = document.getElementById('flowers');
-    const distance = Math.abs(parseFloat(pos.z) - 15) + 1;
-    const scale = Math.max(0.1, 1 / (distance * 0.025 + 1));
+function create2DFlowerBurst(tombstone) {
+    const rect = tombstone.getBoundingClientRect();
+    const cemetery = document.querySelector('.cemetery-2d');
     
-    for (let i = 0; i < 8; i++) {
-        const angle = (Math.PI * 2 * i) / 8;
-        const distance = 2 * scale;
-        const x = parseFloat(pos.x) + Math.cos(angle) * distance;
-        const z = parseFloat(pos.z) + Math.sin(angle) * distance;
-        const y = getTerrainHeight(x, z) + scale * 0.5;
+    for (let i = 0; i < 6; i++) {
+        const flower = document.createElement('div');
+        flower.className = 'flower flower-' + ['yellow', 'pink', 'purple', 'blue'][Math.floor(Math.random() * 4)];
+        flower.style.position = 'absolute';
+        flower.style.left = (rect.left + rect.width / 2) + 'px';
+        flower.style.top = (rect.top + rect.height) + 'px';
+        flower.style.transform = 'translate(-50%, -50%) scale(0)';
+        flower.style.zIndex = '20';
         
-        const flowerColors = ['#FFD700', '#FF69B4', '#DDA0DD', '#87CEEB', '#FFA500'];
-        const color = flowerColors[Math.floor(Math.random() * flowerColors.length)];
+        document.body.appendChild(flower);
         
-        const flower = document.createElement('a-box');
-        flower.setAttribute('position', `${x} ${y} ${z}`);
-        flower.setAttribute('width', scale * 0.4);
-        flower.setAttribute('height', scale * 0.4);
-        flower.setAttribute('depth', scale * 0.4);
-        flower.setAttribute('color', color);
-        flower.setAttribute('scale', '0 0 0');
+        const angle = (Math.PI * 2 * i) / 6;
+        const distance = 30 + Math.random() * 20;
+        const finalX = (rect.left + rect.width / 2) + Math.cos(angle) * distance;
+        const finalY = (rect.top + rect.height) + Math.sin(angle) * distance;
         
-        flower.setAttribute('animation__scale', {
-            property: 'scale',
-            to: '1 1 1',
-            dur: 500,
-            delay: i * 50,
-            easing: 'easeOutBack'
-        });
+        setTimeout(() => {
+            flower.style.transition = 'all 0.8s ease-out';
+            flower.style.left = finalX + 'px';
+            flower.style.top = finalY + 'px';
+            flower.style.transform = 'translate(-50%, -50%) scale(1)';
+            flower.style.opacity = '1';
+        }, i * 100);
         
-        flowers.appendChild(flower);
+        setTimeout(() => {
+            flower.style.transition = 'all 1s ease-in';
+            flower.style.opacity = '0';
+            flower.style.transform = 'translate(-50%, -50%) scale(0)';
+            
+            setTimeout(() => {
+                flower.remove();
+            }, 1000);
+        }, 2000 + i * 100);
     }
 }
 
-function saveGravestones() {
-    localStorage.setItem('dramatic_gravestones', JSON.stringify(gravestones));
+function save2DTombstones() {
+    localStorage.setItem('garden_2d_tombstones', JSON.stringify(tombstones));
 }
 
-function loadGravestones() {
-    const saved = localStorage.getItem('dramatic_gravestones');
+function load2DTombstones() {
+    const saved = localStorage.getItem('garden_2d_tombstones');
     if (saved) {
         const loaded = JSON.parse(saved);
-        Object.assign(gravestones, loaded);
+        Object.assign(tombstones, loaded);
         
         Object.entries(loaded).forEach(([id, data]) => {
-            const gravestonesContainer = document.getElementById('gravestones-3d');
+            const tombstonesContainer = document.getElementById('tombstonesContainer');
             
-            // Recalculate atmospheric color
-            const distance = Math.abs(data.z - 15) + 1;
-            const atmosphericFactor = Math.min(1, distance * 0.006);
-            const stoneColor = `rgb(${Math.floor(192 + 50 * atmosphericFactor)}, ${Math.floor(192 + 50 * atmosphericFactor)}, ${Math.floor(192 + 60 * atmosphericFactor)})`;
+            const tombstone = document.createElement('div');
+            tombstone.className = 'tombstone-2d';
+            tombstone.id = id;
+            tombstone.style.left = data.x + '%';
+            tombstone.style.top = data.y + '%';
+            tombstone.style.transform = `translate(-50%, -100%) scale(${data.scale})`;
             
-            const gravestone = document.createElement('a-entity');
-            gravestone.setAttribute('id', id);
-            gravestone.setAttribute('class', 'gravestone-3d');
-            gravestone.setAttribute('position', `${data.x} ${data.y} ${data.z}`);
+            // Create tombstone parts
+            const stoneBase = document.createElement('div');
+            stoneBase.className = 'stone-base';
+            stoneBase.style.width = data.width + 'px';
+            stoneBase.style.height = Math.floor(data.height * 0.3) + 'px';
             
-            // Base
-            const base = document.createElement('a-box');
-            base.setAttribute('position', '0 0 0');
-            base.setAttribute('width', data.scale);
-            base.setAttribute('height', data.baseScale * 0.2);
-            base.setAttribute('depth', data.baseScale * 0.5);
-            base.setAttribute('color', stoneColor);
-            base.setAttribute('shadow', 'cast: true; receive: true');
-            gravestone.appendChild(base);
+            const stoneBody = document.createElement('div');
+            stoneBody.className = 'stone-body';
+            stoneBody.style.width = data.width + 'px';
+            stoneBody.style.height = Math.floor(data.height * 0.7) + 'px';
             
-            // Main stone
-            const mainStone = document.createElement('a-box');
-            mainStone.setAttribute('position', `0 ${data.height/2 + data.baseScale * 0.1} 0`);
-            mainStone.setAttribute('width', data.scale * 0.8);
-            mainStone.setAttribute('height', data.height);
-            mainStone.setAttribute('depth', data.baseScale * 0.3);
-            mainStone.setAttribute('color', stoneColor);
-            mainStone.setAttribute('shadow', 'cast: true; receive: true');
-            gravestone.appendChild(mainStone);
+            const epitaph = document.createElement('div');
+            epitaph.className = 'epitaph';
             
-            // Top stone
-            const topStone = document.createElement('a-box');
-            topStone.setAttribute('position', `0 ${data.height + data.baseScale * 0.3} 0`);
-            topStone.setAttribute('width', data.scale * 0.6);
-            topStone.setAttribute('height', data.baseScale * 0.4);
-            topStone.setAttribute('depth', data.baseScale * 0.3);
-            topStone.setAttribute('color', stoneColor);
-            topStone.setAttribute('shadow', 'cast: true; receive: true');
-            gravestone.appendChild(topStone);
+            const dates = document.createElement('div');
+            dates.className = 'dates';
             
-            // Text
-            const text = document.createElement('a-text');
             if (data.inscription) {
-                const textValue = `${data.inscription.name}\n${data.inscription.birthYear}-${data.inscription.deathYear}\n${data.inscription.epitaph}`;
-                text.setAttribute('value', textValue);
+                epitaph.innerHTML = `${data.inscription.name}<br>${data.inscription.epitaph}`;
+                dates.textContent = `${data.inscription.birthYear}-${data.inscription.deathYear}`;
             } else {
-                text.setAttribute('value', 'Click to\ninscribe');
+                epitaph.textContent = 'Click to inscribe...';
+                dates.textContent = '????-????';
             }
-            text.setAttribute('position', `0 ${data.height/2 + data.baseScale * 0.1} ${data.baseScale * 0.16}`);
-            text.setAttribute('align', 'center');
-            text.setAttribute('color', '#333333');
-            text.setAttribute('width', Math.max(2, 4 * data.baseScale));
-            text.setAttribute('wrap-count', 15);
-            gravestone.appendChild(text);
             
-            gravestonesContainer.appendChild(gravestone);
+            stoneBody.appendChild(epitaph);
+            stoneBody.appendChild(dates);
+            tombstone.appendChild(stoneBase);
+            tombstone.appendChild(stoneBody);
+            tombstonesContainer.appendChild(tombstone);
             
             // Add click handler
-            gravestone.setAttribute('cursor-listener', '');
+            tombstone.addEventListener('click', () => openInscriptionModal(tombstone));
             
             const idNum = parseInt(id.split('_')[1]);
-            if (idNum >= gravestoneIdCounter) {
-                gravestoneIdCounter = idNum + 1;
+            if (idNum >= tombstoneIdCounter) {
+                tombstoneIdCounter = idNum + 1;
             }
         });
     }

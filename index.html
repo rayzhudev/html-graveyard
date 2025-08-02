@@ -8,48 +8,65 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <a-scene 
-        embedded 
-        vr-mode-ui="enabled: false"
-        cursor="rayOrigin: mouse"
-        renderer="antialias: false; pixelRatio: 1">
+    <!-- 3D Clouds at top -->
+    <div class="clouds-container">
+        <a-scene 
+            embedded 
+            vr-mode-ui="enabled: false"
+            renderer="antialias: false; pixelRatio: 1">
+            
+            <a-camera 
+                position="0 0 0" 
+                rotation="0 0 0"
+                fov="60"
+                look-controls="enabled: false"
+                wasd-controls="enabled: false">
+            </a-camera>
+
+            <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
+            
+            <!-- Just clouds -->
+            <a-entity id="clouds-3d"></a-entity>
+        </a-scene>
+    </div>
+
+    <!-- 2D Cemetery -->
+    <main class="cemetery-2d">
+        <div class="sky-gradient"></div>
         
-        <!-- Fixed Camera -->
-        <a-camera 
-            position="0 12 20" 
-            rotation="-25 0 0"
-            fov="75"
-            look-controls="enabled: false"
-            wasd-controls="enabled: false">
-        </a-camera>
-
-        <!-- Sky -->
-        <a-sky color="#87CEEB"></a-sky>
-
-        <!-- Lighting -->
-        <a-light type="ambient" color="#ffffff" intensity="0.6"></a-light>
-        <a-light type="directional" 
-                 position="3 10 5" 
-                 color="#FFD700" 
-                 intensity="0.8"
-                 castShadow="true">
-        </a-light>
-
-        <!-- Terrain -->
-        <a-entity id="terrain"></a-entity>
-
-        <!-- Trees -->
-        <a-entity id="trees"></a-entity>
-
-        <!-- Flowers -->
-        <a-entity id="flowers"></a-entity>
-
-        <!-- Gravestones Container -->
-        <a-entity id="gravestones-3d"></a-entity>
-
-        <!-- Clouds -->
-        <a-entity id="clouds"></a-entity>
-    </a-scene>
+        <!-- Background hills with texture -->
+        <div class="hills-layer hills-far"></div>
+        <div class="hills-layer hills-mid"></div>
+        <div class="hills-layer hills-near"></div>
+        
+        <!-- Textured grass fields -->
+        <div class="grass-field grass-far"></div>
+        <div class="grass-field grass-mid"></div>
+        <div class="grass-field grass-near"></div>
+        
+        <!-- Trees scattered -->
+        <div class="trees-container">
+            <div class="tree tree-far" style="left: 15%; top: 60%;"></div>
+            <div class="tree tree-far" style="left: 85%; top: 65%;"></div>
+            <div class="tree tree-mid" style="left: 25%; top: 70%;"></div>
+            <div class="tree tree-mid" style="left: 75%; top: 75%;"></div>
+            <div class="tree tree-near" style="left: 10%; top: 80%;"></div>
+            <div class="tree tree-near" style="left: 90%; top: 85%;"></div>
+        </div>
+        
+        <!-- Flowers scattered -->
+        <div class="flowers-container">
+            <div class="flower flower-yellow" style="left: 20%; top: 75%;"></div>
+            <div class="flower flower-pink" style="left: 30%; top: 80%;"></div>
+            <div class="flower flower-purple" style="left: 70%; top: 78%;"></div>
+            <div class="flower flower-blue" style="left: 80%; top: 83%;"></div>
+            <div class="flower flower-yellow" style="left: 45%; top: 85%;"></div>
+            <div class="flower flower-pink" style="left: 55%; top: 82%;"></div>
+        </div>
+        
+        <!-- Tombstones container -->
+        <div class="tombstones-container" id="tombstonesContainer"></div>
+    </main>
 
     <div class="inscription-modal" id="inscriptionModal">
         <div class="modal-content">
