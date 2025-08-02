@@ -24,10 +24,10 @@ document.addEventListener('DOMContentLoaded', () => {
     dragIndicator = document.getElementById('dragIndicator');
     
     scene.addEventListener('loaded', () => {
-        generateTerrain();
-        generateTrees();
-        generateFlowers();
-        generateClouds();
+        generateDramaticTerrain();
+        generateAtmosphericTrees();
+        generateMagicalFlowers();
+        generateDreamyClouds();
         loadGravestones();
         
         // Wait a bit more for canvas to be ready
@@ -37,158 +37,216 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function generateTerrain() {
+function generateDramaticTerrain() {
     const terrain = document.getElementById('terrain');
-    const blockSize = 1;
     
-    // Create single layer terrain with rolling hills
-    for (let x = -30; x < 30; x++) {
-        for (let z = -30; z < 10; z++) {
-            // Create gentle rolling hills
-            const noise = Math.sin(x * 0.08) * Math.cos(z * 0.08) * 1.5;
-            const hillNoise = Math.sin(x * 0.03) * Math.sin(z * 0.03) * 3;
-            const y = Math.floor(noise + hillNoise);
+    // Create dramatic perspective terrain - from huge foreground to tiny background
+    for (let z = 5; z >= -100; z -= 0.5) { // Much closer to much further
+        for (let x = -60; x <= 60; x += 0.8) {
+            // Distance from camera affects everything
+            const distance = Math.abs(z - 5) + 1;
+            const distanceFactor = 1 / (distance * 0.05 + 1);
             
-            // Skip some blocks randomly for variation
-            if (Math.random() > 0.95) continue;
+            // Progressive scaling - huge blocks up close, tiny ones far away
+            const blockSize = Math.max(0.1, 4 * distanceFactor);
             
+            // Skip blocks randomly based on distance for performance
+            if (Math.random() > 0.3 + distanceFactor * 0.4) continue;
+            
+            // Create rolling hills with noise
+            const noise = Math.sin(x * 0.02) * Math.cos(z * 0.02) * 3;
+            const hillNoise = Math.sin(x * 0.005) * Math.sin(z * 0.005) * 8;
+            const microNoise = Math.sin(x * 0.1) * Math.cos(z * 0.1) * 0.5;
+            const y = (noise + hillNoise + microNoise) * distanceFactor;
+            
+            // Create the block
             const block = document.createElement('a-box');
             block.setAttribute('position', `${x} ${y} ${z}`);
             block.setAttribute('width', blockSize);
             block.setAttribute('height', blockSize);
             block.setAttribute('depth', blockSize);
-            block.setAttribute('color', '#7CFC00');
+            
+            // Atmospheric perspective - greener up close, bluer/grayer far away
+            const atmosphericBlue = Math.min(1, distance * 0.01);
+            const greenIntensity = Math.max(0.3, 1 - atmosphericBlue * 0.7);
+            const redChannel = Math.floor(127 * atmosphericBlue + 60 * greenIntensity);
+            const greenChannel = Math.floor(252 * greenIntensity + 100 * atmosphericBlue);
+            const blueChannel = Math.floor(0 * greenIntensity + 180 * atmosphericBlue);
+            
+            const color = `#${redChannel.toString(16).padStart(2, '0')}${greenChannel.toString(16).padStart(2, '0')}${blueChannel.toString(16).padStart(2, '0')}`;
+            block.setAttribute('color', color);
             block.setAttribute('shadow', 'receive: true');
             
             terrain.appendChild(block);
         }
     }
+    
+    // Add some giant foreground grass elements for scale
+    for (let i = 0; i < 15; i++) {
+        const x = (Math.random() - 0.5) * 40;
+        const z = Math.random() * 3 + 6; // Very close to camera
+        const height = 3 + Math.random() * 4;
+        
+        const grass = document.createElement('a-box');
+        grass.setAttribute('position', `${x} ${height/2} ${z}`);
+        grass.setAttribute('width', '0.3');
+        grass.setAttribute('height', height);
+        grass.setAttribute('depth', '0.3');
+        grass.setAttribute('color', '#228B22');
+        grass.setAttribute('opacity', '0.8');
+        
+        terrain.appendChild(grass);
+    }
 }
 
-function generateTrees() {
+function generateAtmosphericTrees() {
     const trees = document.getElementById('trees');
-    const treePositions = [
-        {x: -15, z: -15}, {x: 10, z: -20}, {x: -8, z: -5},
-        {x: 15, z: -10}, {x: -20, z: -25}, {x: 5, z: -18},
-        {x: 0, z: -8}, {x: -12, z: -22}, {x: 18, z: -12}
-    ];
     
-    treePositions.forEach(pos => {
-        const treeGroup = document.createElement('a-entity');
-        const y = getTerrainHeight(pos.x, pos.z) + 1;
+    // Generate trees at various distances with proper scaling
+    for (let i = 0; i < 30; i++) {
+        const x = (Math.random() - 0.5) * 100;
+        const z = Math.random() * -80 - 10; // From close to very far
+        const distance = Math.abs(z - 5) + 1;
+        const scale = Math.max(0.1, 1 / (distance * 0.03 + 1));
         
-        // Trunk
-        for (let i = 0; i < 4; i++) {
+        const treeGroup = document.createElement('a-entity');
+        const y = getTerrainHeight(x, z) + scale;
+        
+        // Trunk height scales with distance
+        const trunkHeight = Math.max(1, 4 * scale);
+        
+        // Create trunk blocks
+        for (let j = 0; j < Math.max(1, Math.floor(trunkHeight)); j++) {
             const trunk = document.createElement('a-box');
-            trunk.setAttribute('position', `${pos.x} ${y + i} ${pos.z}`);
-            trunk.setAttribute('width', '1');
-            trunk.setAttribute('height', '1');
-            trunk.setAttribute('depth', '1');
-            trunk.setAttribute('color', '#8B4513');
+            trunk.setAttribute('position', `${x} ${y + j * scale} ${z}`);
+            trunk.setAttribute('width', scale);
+            trunk.setAttribute('height', scale);
+            trunk.setAttribute('depth', scale);
+            
+            // Atmospheric color for trunk
+            const atmosphericFactor = Math.min(1, distance * 0.008);
+            const brownness = 1 - atmosphericFactor * 0.5;
+            const trunkColor = `rgb(${Math.floor(139 * brownness + 100 * atmosphericFactor)}, ${Math.floor(69 * brownness + 100 * atmosphericFactor)}, ${Math.floor(19 * brownness + 150 * atmosphericFactor)})`;
+            trunk.setAttribute('color', trunkColor);
             treeGroup.appendChild(trunk);
         }
         
-        // Leaves
+        // Create leaf crown
         const leafPositions = [
-            {x: 0, y: 4, z: 0}, {x: 1, y: 4, z: 0}, {x: -1, y: 4, z: 0},
-            {x: 0, y: 4, z: 1}, {x: 0, y: 4, z: -1},
-            {x: 0, y: 5, z: 0}, {x: 1, y: 5, z: 0}, {x: -1, y: 5, z: 0},
-            {x: 0, y: 5, z: 1}, {x: 0, y: 5, z: -1},
-            {x: 0, y: 6, z: 0}
+            {x: 0, y: trunkHeight, z: 0}, {x: scale, y: trunkHeight, z: 0}, {x: -scale, y: trunkHeight, z: 0},
+            {x: 0, y: trunkHeight, z: scale}, {x: 0, y: trunkHeight, z: -scale},
+            {x: 0, y: trunkHeight + scale, z: 0}, {x: scale/2, y: trunkHeight + scale, z: 0}, {x: -scale/2, y: trunkHeight + scale, z: 0},
+            {x: 0, y: trunkHeight + scale, z: scale/2}, {x: 0, y: trunkHeight + scale, z: -scale/2},
+            {x: 0, y: trunkHeight + scale * 2, z: 0}
         ];
         
         leafPositions.forEach(leaf => {
-            const leafBlock = document.createElement('a-box');
-            leafBlock.setAttribute('position', `${pos.x + leaf.x} ${y + leaf.y} ${pos.z + leaf.z}`);
-            leafBlock.setAttribute('width', '1');
-            leafBlock.setAttribute('height', '1');
-            leafBlock.setAttribute('depth', '1');
-            leafBlock.setAttribute('color', '#228B22');
-            leafBlock.setAttribute('opacity', '0.9');
-            treeGroup.appendChild(leafBlock);
+            if (Math.random() > 0.3) { // Random leaf placement
+                const leafBlock = document.createElement('a-box');
+                leafBlock.setAttribute('position', `${x + leaf.x} ${y + leaf.y} ${z + leaf.z}`);
+                leafBlock.setAttribute('width', scale * 0.8);
+                leafBlock.setAttribute('height', scale * 0.8);
+                leafBlock.setAttribute('depth', scale * 0.8);
+                
+                // Atmospheric color for leaves
+                const atmosphericFactor = Math.min(1, distance * 0.008);
+                const greenness = 1 - atmosphericFactor * 0.4;
+                const leafColor = `rgb(${Math.floor(34 * greenness + 120 * atmosphericFactor)}, ${Math.floor(139 * greenness + 140 * atmosphericFactor)}, ${Math.floor(34 * greenness + 160 * atmosphericFactor)})`;
+                leafBlock.setAttribute('color', leafColor);
+                leafBlock.setAttribute('opacity', '0.9');
+                treeGroup.appendChild(leafBlock);
+            }
         });
         
         trees.appendChild(treeGroup);
-    });
+    }
 }
 
-function generateFlowers() {
+function generateMagicalFlowers() {
     const flowers = document.getElementById('flowers');
     
-    for (let i = 0; i < 25; i++) {
-        const x = (Math.random() - 0.5) * 50;
-        const z = Math.random() * -25 - 5; // Keep flowers in visible area
-        const y = getTerrainHeight(x, z) + 0.5;
+    // Generate flowers at various scales
+    for (let i = 0; i < 40; i++) {
+        const x = (Math.random() - 0.5) * 80;
+        const z = Math.random() * -60 - 5; // From close to far
+        const distance = Math.abs(z - 5) + 1;
+        const scale = Math.max(0.05, 1 / (distance * 0.04 + 1));
+        const y = getTerrainHeight(x, z) + scale * 0.5;
         
         const flowerGroup = document.createElement('a-entity');
         
         // Stem
         const stem = document.createElement('a-box');
         stem.setAttribute('position', `${x} ${y} ${z}`);
-        stem.setAttribute('width', '0.1');
-        stem.setAttribute('height', '0.5');
-        stem.setAttribute('depth', '0.1');
+        stem.setAttribute('width', scale * 0.1);
+        stem.setAttribute('height', scale * 0.8);
+        stem.setAttribute('depth', scale * 0.1);
         stem.setAttribute('color', '#228B22');
         flowerGroup.appendChild(stem);
         
-        // Flower head
-        const flowerColors = ['#FFD700', '#FF69B4', '#DDA0DD', '#87CEEB', '#FFA500'];
+        // Flower petals
+        const flowerColors = ['#FFD700', '#FF69B4', '#DDA0DD', '#87CEEB', '#FFA500', '#FF1493', '#BA55D3', '#F0E68C'];
         const color = flowerColors[Math.floor(Math.random() * flowerColors.length)];
         
-        const petalPositions = [
-            {x: 0.2, z: 0}, {x: -0.2, z: 0},
-            {x: 0, z: 0.2}, {x: 0, z: -0.2}
-        ];
-        
-        petalPositions.forEach(petal => {
-            const petalBlock = document.createElement('a-box');
-            petalBlock.setAttribute('position', `${x + petal.x} ${y + 0.5} ${z + petal.z}`);
-            petalBlock.setAttribute('width', '0.3');
-            petalBlock.setAttribute('height', '0.3');
-            petalBlock.setAttribute('depth', '0.3');
-            petalBlock.setAttribute('color', color);
-            flowerGroup.appendChild(petalBlock);
-        });
+        // Create multiple petals for larger flowers up close
+        const petalCount = Math.max(4, Math.floor(8 * scale));
+        for (let p = 0; p < petalCount; p++) {
+            const angle = (Math.PI * 2 * p) / petalCount;
+            const petalX = x + Math.cos(angle) * scale * 0.3;
+            const petalZ = z + Math.sin(angle) * scale * 0.3;
+            
+            const petal = document.createElement('a-box');
+            petal.setAttribute('position', `${petalX} ${y + scale * 0.8} ${petalZ}`);
+            petal.setAttribute('width', scale * 0.4);
+            petal.setAttribute('height', scale * 0.4);
+            petal.setAttribute('depth', scale * 0.4);
+            petal.setAttribute('color', color);
+            flowerGroup.appendChild(petal);
+        }
         
         flowers.appendChild(flowerGroup);
     }
 }
 
-function generateClouds() {
+function generateDreamyClouds() {
     const clouds = document.getElementById('clouds');
     
-    for (let i = 0; i < 5; i++) {
+    // Create more dramatic cloud layers
+    for (let i = 0; i < 8; i++) {
         const cloudGroup = document.createElement('a-entity');
-        const x = (Math.random() - 0.5) * 60;
-        const y = 15 + Math.random() * 10;
-        const z = (Math.random() - 0.5) * 60;
+        const x = (Math.random() - 0.5) * 120;
+        const y = 12 + Math.random() * 15 + i * 2; // Multiple cloud layers
+        const z = Math.random() * -40 - 20; // Various distances
+        const distance = Math.abs(z) + 20;
+        const scale = Math.max(0.3, 8 / (distance * 0.05 + 1));
         
-        // Create cloud from multiple white boxes
+        // Create cloud from multiple blocks
         const cloudBlocks = [
             {x: 0, y: 0, z: 0}, {x: 1, y: 0, z: 0}, {x: -1, y: 0, z: 0},
-            {x: 0, y: 0, z: 1}, {x: 0, y: 0, z: -1},
-            {x: 2, y: 0, z: 0}, {x: -2, y: 0, z: 0},
-            {x: 1, y: 0, z: 1}, {x: -1, y: 0, z: -1}
+            {x: 0, y: 0, z: 1}, {x: 0, y: 0, z: -1}, {x: 2, y: 0, z: 0}, {x: -2, y: 0, z: 0},
+            {x: 1, y: 0, z: 1}, {x: -1, y: 0, z: -1}, {x: 0, y: 1, z: 0},
+            {x: 1, y: 1, z: 0}, {x: -1, y: 1, z: 0}
         ];
         
         cloudBlocks.forEach(block => {
-            if (Math.random() > 0.3) {
+            if (Math.random() > 0.2) {
                 const cloudBlock = document.createElement('a-box');
-                cloudBlock.setAttribute('position', `${x + block.x * 2} ${y + block.y} ${z + block.z * 2}`);
-                cloudBlock.setAttribute('width', '3');
-                cloudBlock.setAttribute('height', '2');
-                cloudBlock.setAttribute('depth', '3');
+                cloudBlock.setAttribute('position', `${x + block.x * scale} ${y + block.y * scale} ${z + block.z * scale}`);
+                cloudBlock.setAttribute('width', scale * 2);
+                cloudBlock.setAttribute('height', scale * 1.5);
+                cloudBlock.setAttribute('depth', scale * 2);
                 cloudBlock.setAttribute('color', '#FFFFFF');
-                cloudBlock.setAttribute('opacity', '0.8');
+                cloudBlock.setAttribute('opacity', Math.max(0.4, 0.9 - distance * 0.01));
                 cloudGroup.appendChild(cloudBlock);
             }
         });
         
-        // Animate cloud movement
+        // Animate cloud movement with different speeds
+        const speed = 60000 + Math.random() * 60000;
         cloudGroup.setAttribute('animation', {
             property: 'position',
-            to: `${x + 100} ${y} ${z}`,
-            dur: 120000,
+            to: `${x + 150} ${y} ${z}`,
+            dur: speed,
             loop: true,
             easing: 'linear'
         });
@@ -198,29 +256,14 @@ function generateClouds() {
 }
 
 function getTerrainHeight(x, z) {
-    const noise = Math.sin(x * 0.08) * Math.cos(z * 0.08) * 1.5;
-    const hillNoise = Math.sin(x * 0.03) * Math.sin(z * 0.03) * 3;
-    return Math.floor(noise + hillNoise);
-}
-
-function interpolateColor(color1, color2, factor) {
-    const c1 = hexToRgb(color1);
-    const c2 = hexToRgb(color2);
+    const distance = Math.abs(z - 5) + 1;
+    const distanceFactor = 1 / (distance * 0.05 + 1);
     
-    const r = Math.round(c1.r + (c2.r - c1.r) * factor);
-    const g = Math.round(c1.g + (c2.g - c1.g) * factor);
-    const b = Math.round(c1.b + (c2.b - c1.b) * factor);
+    const noise = Math.sin(x * 0.02) * Math.cos(z * 0.02) * 3;
+    const hillNoise = Math.sin(x * 0.005) * Math.sin(z * 0.005) * 8;
+    const microNoise = Math.sin(x * 0.1) * Math.cos(z * 0.1) * 0.5;
     
-    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
-}
-
-function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-    } : null;
+    return (noise + hillNoise + microNoise) * distanceFactor;
 }
 
 function setupDragAndDrop() {
@@ -229,7 +272,6 @@ function setupDragAndDrop() {
     if (canvas) {
         canvas.addEventListener('mousedown', handleMouseDown);
     } else {
-        // Fallback to scene if canvas not found
         scene.addEventListener('mousedown', handleMouseDown);
     }
     
@@ -248,7 +290,6 @@ function setupDragAndDrop() {
 }
 
 function handleMouseDown(e) {
-    // Don't start drag if clicking on modal or gravestone
     if (e.target.closest('.modal') || e.target.closest('.gravestone-3d')) {
         return;
     }
@@ -306,16 +347,17 @@ function cancelDrag() {
 }
 
 function createGravestone3D(screenX, screenY, width, height) {
-    // Convert screen coordinates to 3D world coordinates
     const canvas = scene.canvas || scene.querySelector('canvas');
     const rect = canvas ? canvas.getBoundingClientRect() : scene.getBoundingClientRect();
     const x = ((screenX - rect.left) / rect.width) * 2 - 1;
     const y = -((screenY - rect.top) / rect.height) * 2 + 1;
     
-    // Adjust world positioning for the new camera angle
-    const worldX = x * 20;
-    const worldZ = (y * 15) - 5; // Closer to camera is lower z
-    const worldY = getTerrainHeight(worldX, worldZ) + 1;
+    // Map screen coordinates to world with dramatic perspective
+    const worldX = x * 40;
+    const worldZ = (y * 30) - 20; // Further back for better placement
+    const distance = Math.abs(worldZ - 5) + 1;
+    const scale = Math.max(0.3, 2 / (distance * 0.03 + 1)); // Scale with distance
+    const worldY = getTerrainHeight(worldX, worldZ) + scale;
     
     const id = `grave_${gravestoneIdCounter++}`;
     const gravestonesContainer = document.getElementById('gravestones-3d');
@@ -325,39 +367,40 @@ function createGravestone3D(screenX, screenY, width, height) {
     gravestone.setAttribute('class', 'gravestone-3d');
     gravestone.setAttribute('position', `${worldX} ${worldY} ${worldZ}`);
     
-    // Scale based on drag size
-    const scale = Math.min(Math.max(width / 80, 0.5), 2);
-    const stoneHeight = Math.min(Math.max(height / 40, 1), 4);
+    // Scale tombstone based on distance and drag size
+    const finalScale = scale * Math.min(Math.max(width / 80, 0.5), 2);
+    const stoneHeight = scale * Math.min(Math.max(height / 40, 1), 4);
     
-    // Create tombstone from blocks
-    const stoneColor = '#C0C0C0';
+    // Atmospheric color for stone
+    const atmosphericFactor = Math.min(1, distance * 0.008);
+    const stoneColor = `rgb(${Math.floor(192 + 50 * atmosphericFactor)}, ${Math.floor(192 + 50 * atmosphericFactor)}, ${Math.floor(192 + 60 * atmosphericFactor)})`;
     
     // Base
     const base = document.createElement('a-box');
     base.setAttribute('position', '0 0 0');
-    base.setAttribute('width', scale);
-    base.setAttribute('height', '0.2');
-    base.setAttribute('depth', '0.5');
+    base.setAttribute('width', finalScale);
+    base.setAttribute('height', scale * 0.2);
+    base.setAttribute('depth', scale * 0.5);
     base.setAttribute('color', stoneColor);
     base.setAttribute('shadow', 'cast: true; receive: true');
     gravestone.appendChild(base);
     
     // Main stone
     const mainStone = document.createElement('a-box');
-    mainStone.setAttribute('position', `0 ${stoneHeight/2 + 0.1} 0`);
-    mainStone.setAttribute('width', scale * 0.8);
+    mainStone.setAttribute('position', `0 ${stoneHeight/2 + scale * 0.1} 0`);
+    mainStone.setAttribute('width', finalScale * 0.8);
     mainStone.setAttribute('height', stoneHeight);
-    mainStone.setAttribute('depth', '0.3');
+    mainStone.setAttribute('depth', scale * 0.3);
     mainStone.setAttribute('color', stoneColor);
     mainStone.setAttribute('shadow', 'cast: true; receive: true');
     gravestone.appendChild(mainStone);
     
-    // Top curved part (simplified with box)
+    // Top stone
     const topStone = document.createElement('a-box');
-    topStone.setAttribute('position', `0 ${stoneHeight + 0.3} 0`);
-    topStone.setAttribute('width', scale * 0.6);
-    topStone.setAttribute('height', '0.4');
-    topStone.setAttribute('depth', '0.3');
+    topStone.setAttribute('position', `0 ${stoneHeight + scale * 0.3} 0`);
+    topStone.setAttribute('width', finalScale * 0.6);
+    topStone.setAttribute('height', scale * 0.4);
+    topStone.setAttribute('depth', scale * 0.3);
     topStone.setAttribute('color', stoneColor);
     topStone.setAttribute('shadow', 'cast: true; receive: true');
     gravestone.appendChild(topStone);
@@ -365,16 +408,16 @@ function createGravestone3D(screenX, screenY, width, height) {
     // Text
     const text = document.createElement('a-text');
     text.setAttribute('value', 'Click to\ninscribe');
-    text.setAttribute('position', `0 ${stoneHeight/2 + 0.1} 0.16`);
+    text.setAttribute('position', `0 ${stoneHeight/2 + scale * 0.1} ${scale * 0.16}`);
     text.setAttribute('align', 'center');
     text.setAttribute('color', '#333333');
-    text.setAttribute('width', 4);
+    text.setAttribute('width', Math.max(2, 4 * scale));
     text.setAttribute('wrap-count', 10);
     gravestone.appendChild(text);
     
     gravestonesContainer.appendChild(gravestone);
     
-    // Add click handler using A-Frame component
+    // Add click handler
     gravestone.setAttribute('cursor-listener', '');
     
     // Store gravestone data
@@ -382,8 +425,9 @@ function createGravestone3D(screenX, screenY, width, height) {
         x: worldX,
         y: worldY,
         z: worldZ,
-        scale: scale,
+        scale: finalScale,
         height: stoneHeight,
+        baseScale: scale,
         inscription: null
     };
     
@@ -392,21 +436,22 @@ function createGravestone3D(screenX, screenY, width, height) {
 }
 
 function animateGravestoneAppearance(gravestone) {
-    const startY = gravestone.getAttribute('position').y - 2;
-    gravestone.setAttribute('position', `${gravestone.getAttribute('position').x} ${startY} ${gravestone.getAttribute('position').z}`);
+    const pos = gravestone.getAttribute('position');
+    const startY = pos.y - 2;
+    gravestone.setAttribute('position', `${pos.x} ${startY} ${pos.z}`);
     gravestone.setAttribute('scale', '0 0 0');
     
     gravestone.setAttribute('animation__position', {
         property: 'position',
-        to: `${gravestone.getAttribute('position').x} ${gravestone.getAttribute('position').y + 2} ${gravestone.getAttribute('position').z}`,
-        dur: 500,
+        to: `${pos.x} ${pos.y} ${pos.z}`,
+        dur: 800,
         easing: 'easeOutBack'
     });
     
     gravestone.setAttribute('animation__scale', {
         property: 'scale',
         to: '1 1 1',
-        dur: 500,
+        dur: 800,
         easing: 'easeOutBack'
     });
 }
@@ -461,22 +506,24 @@ function updateGravestone3D(gravestone, inscription) {
 function createFlowerBurst3D(gravestone) {
     const pos = gravestone.getAttribute('position');
     const flowers = document.getElementById('flowers');
+    const distance = Math.abs(parseFloat(pos.z) - 5) + 1;
+    const scale = Math.max(0.1, 1 / (distance * 0.03 + 1));
     
     for (let i = 0; i < 8; i++) {
         const angle = (Math.PI * 2 * i) / 8;
-        const distance = 2;
+        const distance = 2 * scale;
         const x = parseFloat(pos.x) + Math.cos(angle) * distance;
         const z = parseFloat(pos.z) + Math.sin(angle) * distance;
-        const y = getTerrainHeight(x, z) + 0.5;
+        const y = getTerrainHeight(x, z) + scale * 0.5;
         
         const flowerColors = ['#FFD700', '#FF69B4', '#DDA0DD', '#87CEEB', '#FFA500'];
         const color = flowerColors[Math.floor(Math.random() * flowerColors.length)];
         
         const flower = document.createElement('a-box');
         flower.setAttribute('position', `${x} ${y} ${z}`);
-        flower.setAttribute('width', '0.3');
-        flower.setAttribute('height', '0.3');
-        flower.setAttribute('depth', '0.3');
+        flower.setAttribute('width', scale * 0.4);
+        flower.setAttribute('height', scale * 0.4);
+        flower.setAttribute('depth', scale * 0.4);
         flower.setAttribute('color', color);
         flower.setAttribute('scale', '0 0 0');
         
@@ -493,11 +540,11 @@ function createFlowerBurst3D(gravestone) {
 }
 
 function saveGravestones() {
-    localStorage.setItem('minecraft_gravestones', JSON.stringify(gravestones));
+    localStorage.setItem('dramatic_gravestones', JSON.stringify(gravestones));
 }
 
 function loadGravestones() {
-    const saved = localStorage.getItem('minecraft_gravestones');
+    const saved = localStorage.getItem('dramatic_gravestones');
     if (saved) {
         const loaded = JSON.parse(saved);
         Object.assign(gravestones, loaded);
@@ -505,39 +552,42 @@ function loadGravestones() {
         Object.entries(loaded).forEach(([id, data]) => {
             const gravestonesContainer = document.getElementById('gravestones-3d');
             
+            // Recalculate atmospheric color
+            const distance = Math.abs(data.z - 5) + 1;
+            const atmosphericFactor = Math.min(1, distance * 0.008);
+            const stoneColor = `rgb(${Math.floor(192 + 50 * atmosphericFactor)}, ${Math.floor(192 + 50 * atmosphericFactor)}, ${Math.floor(192 + 60 * atmosphericFactor)})`;
+            
             const gravestone = document.createElement('a-entity');
             gravestone.setAttribute('id', id);
             gravestone.setAttribute('class', 'gravestone-3d');
             gravestone.setAttribute('position', `${data.x} ${data.y} ${data.z}`);
             
-            const stoneColor = '#C0C0C0';
-            
             // Base
             const base = document.createElement('a-box');
             base.setAttribute('position', '0 0 0');
             base.setAttribute('width', data.scale);
-            base.setAttribute('height', '0.2');
-            base.setAttribute('depth', '0.5');
+            base.setAttribute('height', data.baseScale * 0.2);
+            base.setAttribute('depth', data.baseScale * 0.5);
             base.setAttribute('color', stoneColor);
             base.setAttribute('shadow', 'cast: true; receive: true');
             gravestone.appendChild(base);
             
             // Main stone
             const mainStone = document.createElement('a-box');
-            mainStone.setAttribute('position', `0 ${data.height/2 + 0.1} 0`);
+            mainStone.setAttribute('position', `0 ${data.height/2 + data.baseScale * 0.1} 0`);
             mainStone.setAttribute('width', data.scale * 0.8);
             mainStone.setAttribute('height', data.height);
-            mainStone.setAttribute('depth', '0.3');
+            mainStone.setAttribute('depth', data.baseScale * 0.3);
             mainStone.setAttribute('color', stoneColor);
             mainStone.setAttribute('shadow', 'cast: true; receive: true');
             gravestone.appendChild(mainStone);
             
             // Top stone
             const topStone = document.createElement('a-box');
-            topStone.setAttribute('position', `0 ${data.height + 0.3} 0`);
+            topStone.setAttribute('position', `0 ${data.height + data.baseScale * 0.3} 0`);
             topStone.setAttribute('width', data.scale * 0.6);
-            topStone.setAttribute('height', '0.4');
-            topStone.setAttribute('depth', '0.3');
+            topStone.setAttribute('height', data.baseScale * 0.4);
+            topStone.setAttribute('depth', data.baseScale * 0.3);
             topStone.setAttribute('color', stoneColor);
             topStone.setAttribute('shadow', 'cast: true; receive: true');
             gravestone.appendChild(topStone);
@@ -550,16 +600,16 @@ function loadGravestones() {
             } else {
                 text.setAttribute('value', 'Click to\ninscribe');
             }
-            text.setAttribute('position', `0 ${data.height/2 + 0.1} 0.16`);
+            text.setAttribute('position', `0 ${data.height/2 + data.baseScale * 0.1} ${data.baseScale * 0.16}`);
             text.setAttribute('align', 'center');
             text.setAttribute('color', '#333333');
-            text.setAttribute('width', 4);
+            text.setAttribute('width', Math.max(2, 4 * data.baseScale));
             text.setAttribute('wrap-count', 15);
             gravestone.appendChild(text);
             
             gravestonesContainer.appendChild(gravestone);
             
-            // Add click handler using A-Frame component
+            // Add click handler
             gravestone.setAttribute('cursor-listener', '');
             
             const idNum = parseInt(id.split('_')[1]);
