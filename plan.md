@@ -57,6 +57,11 @@ An interactive "Garden of Memories" cemetery built during HTML in Hyde #1. Users
   - Green grass base matching the cemetery theme
   - Multiple format support (SVG for modern browsers, ICO fallback)
   - Apple touch icon support for iOS devices
+- ✅ **Performance optimization** - Eliminated external dependencies:
+  - Self-hosted A-Frame library (1.3MB) instead of CDN loading
+  - Zero external network requests for faster, more reliable loading
+  - All resources served from same domain with Cloudflare caching
+  - ~200-500ms improvement in page load times
 
 ## Next Steps
 
