@@ -303,69 +303,66 @@ body {
     filter: drop-shadow(6px 12px 20px rgba(0,0,0,0.5));
 }
 
-.stone-base {
-    background: 
-        radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.4) 0%, transparent 50%),
-        linear-gradient(145deg, #E8E8E8 0%, #C0C0C0 50%, #A8A8A8 100%);
-    border: 3px solid #999999;
-    border-radius: 50% 50% 8px 8px / 60% 60% 8px 8px;
-    position: relative;
-    box-shadow: 
-        inset 0 3px 6px rgba(255,255,255,0.6),
-        inset 0 -2px 4px rgba(0,0,0,0.2),
-        0 2px 4px rgba(0,0,0,0.1);
-}
-
-.stone-body {
-    background: 
-        radial-gradient(ellipse at 25% 15%, rgba(255,255,255,0.3) 0%, transparent 60%),
-        linear-gradient(145deg, #E8E8E8 0%, #C0C0C0 30%, #B8B8B8 70%, #A8A8A8 100%);
-    border: 3px solid #999999;
-    border-top: none;
-    border-radius: 0 0 8px 8px;
-    padding: 12px 8px;
+.tombstone-stone {
+    background: #B8B8B8;
+    border: 3px solid #000000;
+    border-radius: 30px 30px 8px 8px;
+    padding: 16px 12px;
     text-align: center;
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: space-between;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
     box-shadow: 
-        inset 0 3px 6px rgba(255,255,255,0.5),
-        inset 0 -3px 6px rgba(0,0,0,0.15),
-        0 2px 4px rgba(0,0,0,0.1);
-    background-image: 
-        repeating-linear-gradient(45deg, 
-            transparent 0px, transparent 1px, 
-            rgba(0,0,0,0.02) 1px, rgba(0,0,0,0.02) 2px),
-        repeating-linear-gradient(-45deg, 
-            transparent 0px, transparent 1px, 
-            rgba(255,255,255,0.05) 1px, rgba(255,255,255,0.05) 2px);
+        inset 3px 3px 0 #E0E0E0,
+        inset -3px -3px 0 #808080;
+    min-height: 120px;
 }
 
-.stone-body::before {
+.tombstone-stone::before {
     content: '';
     position: absolute;
-    top: 8px;
-    left: 8px;
-    right: 8px;
-    bottom: 8px;
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 4px;
-    pointer-events: none;
+    top: 4px;
+    left: 4px;
+    right: 4px;
+    bottom: 4px;
+    background: #A0A0A0;
+    border: 1px solid #707070;
+    border-radius: 26px 26px 4px 4px;
+    box-shadow: 
+        inset 2px 2px 0 #D0D0D0,
+        inset -2px -2px 0 #606060;
 }
 
 .inscription-text {
     font-size: 0.75rem;
-    color: #1a1a1a;
-    line-height: 1.4;
-    font-weight: 500;
+    color: #000000;
+    line-height: 1.3;
+    font-weight: bold;
     text-shadow: 
-        1px 1px 0 rgba(255,255,255,0.8),
-        0 0 3px rgba(255,255,255,0.3);
+        1px 0 0 #FFFFFF,
+        0 1px 0 #FFFFFF,
+        -1px 0 0 #FFFFFF,
+        0 -1px 0 #FFFFFF;
     word-wrap: break-word;
     white-space: pre-line;
-    font-family: 'Times New Roman', serif;
-    letter-spacing: 0.3px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 10;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    text-rendering: optimizeSpeed;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
 /* Modal and Drag Indicator remain the same */
@@ -390,7 +387,7 @@ body {
     background: white;
     border-radius: 10px;
     padding: 2rem;
-    max-width: 400px;
+    max-width: 500px;
     width: 90%;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
@@ -427,8 +424,9 @@ body {
     outline: none;
     transition: all 0.3s;
     resize: vertical;
-    min-height: 120px;
+    min-height: 200px;
     line-height: 1.5;
+    width: 100%;
 }
 
 #inscriptionText:focus {

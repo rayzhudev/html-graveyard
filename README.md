@@ -1,6 +1,7 @@
-# Garden of Memories
+# HTML Graveyard
 
-A peaceful, daytime garden cemetery where visitors can create and inscribe tombstones. Built with pure HTML, CSS, and JavaScript - no bundlers required.
+A peaceful, daytime garden cemetery where visitors can create and inscribe tombstones. Built during [HTML in Hyde #1](https://maxbo.me/html-in-hyde/1/invitation.html).
+
 
 ## Features
 
@@ -17,10 +18,4 @@ A peaceful, daytime garden cemetery where visitors can create and inscribe tombs
 2. Click on any tombstone to add an inscription
 3. All tombstones and inscriptions are saved automatically
 
-## Deployment
 
-This site is designed to work with Coolify/Nixpacks deployment. Simply push to your repository and it will automatically build and deploy.
-
-## Browser Support
-
-Works in all modern browsers with full ES6 support.
