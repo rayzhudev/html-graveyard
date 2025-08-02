@@ -4,7 +4,7 @@
   "description": "A peaceful, daytime garden cemetery where visitors can create and inscribe tombstones",
   "main": "index.html",
   "scripts": {
-    "build": "mkdir -p dist && cp *.html *.css *.js *.md dist/ 2>/dev/null || true",
+    "build": "mkdir -p dist && cp *.html *.css *.js *.md *.png dist/ 2>/dev/null || true",
     "start": "python3 -m http.server 8000",
     "dev": "python3 -m http.server 8000"
   },

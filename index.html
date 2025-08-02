@@ -1,87 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garden of Memories</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+
+    <!-- Primary Meta Tags -->
+    <title>Garden of Memories - HTML Graveyard</title>
+    <meta name="title" content="Garden of Memories - HTML Graveyard" />
+    <meta
+      name="description"
+      content="A peaceful, interactive cemetery where you can create tombstones and inscriptions. Honor forgotten technologies, trends, and memories in this beautiful garden setting."
+    />
+    <meta
+      name="keywords"
+      content="cemetery, graveyard, interactive, tombstones, memories, HTML, A-Frame, peaceful, garden"
+    />
+    <meta name="author" content="rayzhudev" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://html-graveyard.com/" />
+    <meta property="og:title" content="Garden of Memories - HTML Graveyard" />
+    <meta
+      property="og:description"
+      content="A peaceful, interactive cemetery where you can create tombstones and inscriptions. Honor forgotten technologies, trends, and memories in this beautiful garden setting."
+    />
+    <meta
+      property="og:image"
+      content="https://html-graveyard.com/og-image.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="HTML Graveyard showing tombstones in a peaceful garden with rolling hills, trees, and flowers"
+    />
+    <meta property="og:site_name" content="HTML Graveyard" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://html-graveyard.com/" />
+    <meta
+      property="twitter:title"
+      content="Garden of Memories - HTML Graveyard"
+    />
+    <meta
+      property="twitter:description"
+      content="A peaceful, interactive cemetery where you can create tombstones and inscriptions. Honor forgotten technologies, trends, and memories."
+    />
+    <meta
+      property="twitter:image"
+      content="https://html-graveyard.com/og-image.png"
+    />
+    <meta
+      property="twitter:image:alt"
+      content="HTML Graveyard showing tombstones in a peaceful garden setting"
+    />
+
+    <!-- Additional Meta Tags -->
+    <meta name="robots" content="index, follow" />
+    <meta name="language" content="English" />
+    <meta name="theme-color" content="#87CEEB" />
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <!-- 3D Clouds at top -->
     <div class="clouds-container">
-        <a-scene 
-            embedded 
-            vr-mode-ui="enabled: false"
-            renderer="antialias: false; pixelRatio: 1">
-            
-            <a-camera 
-                position="0 0 0" 
-                rotation="0 0 0"
-                fov="60"
-                look-controls="enabled: false"
-                wasd-controls="enabled: false">
-            </a-camera>
+      <a-scene
+        embedded
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false"
+        xr-mode-ui="enabled: false"
+        webxr="requiredFeatures: ; optionalFeatures: ;"
+        renderer="antialias: false; pixelRatio: 1"
+      >
+        <a-camera
+          position="0 0 0"
+          rotation="0 0 0"
+          fov="60"
+          look-controls="enabled: false"
+          wasd-controls="enabled: false"
+        >
+        </a-camera>
 
-            <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
-            
-            <!-- Just clouds -->
-            <a-entity id="clouds-3d"></a-entity>
-        </a-scene>
+        <a-light type="ambient" color="#ffffff" intensity="0.8"></a-light>
+
+        <!-- Just clouds -->
+        <a-entity id="clouds-3d"></a-entity>
+      </a-scene>
     </div>
 
     <!-- 2D Cemetery -->
     <main class="cemetery-2d">
-        <div class="sky-gradient"></div>
-        
-        <!-- Background hills with texture -->
-        <div class="hills-layer hills-far"></div>
-        <div class="hills-layer hills-mid"></div>
-        <div class="hills-layer hills-near"></div>
-        
-        <!-- Textured grass fields -->
-        <div class="grass-field grass-far"></div>
-        <div class="grass-field grass-mid"></div>
-        <div class="grass-field grass-near"></div>
-        
-        <!-- Trees scattered -->
-        <div class="trees-container">
-            <div class="tree tree-far" style="left: 15%; top: 60%;"></div>
-            <div class="tree tree-far" style="left: 85%; top: 65%;"></div>
-            <div class="tree tree-mid" style="left: 25%; top: 70%;"></div>
-            <div class="tree tree-mid" style="left: 75%; top: 75%;"></div>
-            <div class="tree tree-near" style="left: 10%; top: 80%;"></div>
-            <div class="tree tree-near" style="left: 90%; top: 85%;"></div>
-        </div>
-        
-        <!-- Flowers scattered -->
-        <div class="flowers-container">
-            <div class="flower flower-yellow" style="left: 20%; top: 75%;"></div>
-            <div class="flower flower-pink" style="left: 30%; top: 80%;"></div>
-            <div class="flower flower-purple" style="left: 70%; top: 78%;"></div>
-            <div class="flower flower-blue" style="left: 80%; top: 83%;"></div>
-            <div class="flower flower-yellow" style="left: 45%; top: 85%;"></div>
-            <div class="flower flower-pink" style="left: 55%; top: 82%;"></div>
-        </div>
-        
-        <!-- Tombstones container -->
-        <div class="tombstones-container" id="tombstonesContainer"></div>
+      <div class="sky-gradient"></div>
+
+      <!-- Background hills with texture -->
+      <div class="hills-layer hills-far"></div>
+      <div class="hills-layer hills-mid"></div>
+      <div class="hills-layer hills-near"></div>
+
+      <!-- Textured grass fields -->
+      <div class="grass-field grass-far"></div>
+      <div class="grass-field grass-mid"></div>
+      <div class="grass-field grass-near"></div>
+
+      <!-- Trees scattered -->
+      <div class="trees-container">
+        <div class="tree tree-far" style="left: 15%; top: 60%"></div>
+        <div class="tree tree-far" style="left: 85%; top: 65%"></div>
+        <div class="tree tree-mid" style="left: 25%; top: 70%"></div>
+        <div class="tree tree-mid" style="left: 75%; top: 75%"></div>
+        <div class="tree tree-near" style="left: 10%; top: 80%"></div>
+        <div class="tree tree-near" style="left: 90%; top: 85%"></div>
+      </div>
+
+      <!-- Flowers scattered -->
+      <div class="flowers-container">
+        <div class="flower flower-yellow" style="left: 20%; top: 75%"></div>
+        <div class="flower flower-pink" style="left: 30%; top: 80%"></div>
+        <div class="flower flower-purple" style="left: 70%; top: 78%"></div>
+        <div class="flower flower-blue" style="left: 80%; top: 83%"></div>
+        <div class="flower flower-yellow" style="left: 45%; top: 85%"></div>
+        <div class="flower flower-pink" style="left: 55%; top: 82%"></div>
+      </div>
+
+      <!-- Tombstones container -->
+      <div class="tombstones-container" id="tombstonesContainer"></div>
     </main>
 
     <div class="inscription-modal" id="inscriptionModal">
-        <div class="modal-content">
-            <form id="inscriptionForm">
-                <textarea id="inscriptionText" placeholder="Enter your inscription here...&#10;You can use multiple lines&#10;Each line will appear on the stone" maxlength="200" required></textarea>
-                <div class="modal-buttons">
-                    <button type="submit" class="btn-inscribe">Inscribe</button>
-                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-                </div>
-            </form>
-        </div>
+      <div class="modal-content">
+        <form id="inscriptionForm">
+          <textarea
+            id="inscriptionText"
+            placeholder="Enter your inscription here...&#10;You can use multiple lines&#10;Each line will appear on the stone"
+            maxlength="200"
+            required
+          ></textarea>
+          <div class="modal-buttons">
+            <button type="submit" class="btn-inscribe">Inscribe</button>
+            <button type="button" class="btn-cancel" onclick="closeModal()">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <div class="drag-indicator" id="dragIndicator"></div>
 
     <script src="script.js"></script>
-</body>
+  </body>
 </html>

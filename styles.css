@@ -12,6 +12,20 @@ body {
     background: #87CEEB;
 }
 
+/* Hide all VR-related UI elements */
+.a-enter-vr,
+.a-enter-ar,
+.a-orientation-modal,
+.a-enter-vr-button,
+.a-enter-vr-modal,
+[data-aframe-vr-ui],
+a-scene .a-enter-vr {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
 /* 3D Clouds Container at Top */
 .clouds-container {
     position: fixed;
