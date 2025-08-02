@@ -158,7 +158,11 @@ function create2DTombstone(screenX, screenY, width, height) {
     
     // Scale based on position (perspective effect)
     const depthFactor = (relativeY - 50) / 50; // 0 at middle, 1 at bottom
-    const scale = 0.6 + (depthFactor * 0.8); // Scale from 0.6 to 1.4
+    const perspectiveScale = 0.6 + (depthFactor * 0.8); // Scale from 0.6 to 1.4
+    
+    // Size based directly on drag box size (more responsive)
+    const stoneWidth = Math.min(Math.max(width * 0.8, 80), 300);
+    const stoneHeight = Math.min(Math.max(height * 0.8, 100), 400);
     
     // Create tombstone element
     const tombstone = document.createElement('div');
@@ -166,33 +170,28 @@ function create2DTombstone(screenX, screenY, width, height) {
     tombstone.id = id;
     tombstone.style.left = relativeX + '%';
     tombstone.style.top = relativeY + '%';
-    tombstone.style.transform = `translate(-50%, -100%) scale(${scale})`;
-    
-    // Constrain size based on drag
-    const stoneWidth = Math.min(Math.max(width * 0.3, 60), 120);
-    const stoneHeight = Math.min(Math.max(height * 0.3, 80), 150);
+    tombstone.style.transform = `translate(-50%, -100%) scale(${perspectiveScale})`;
     
     // Create tombstone parts
     const stoneBase = document.createElement('div');
     stoneBase.className = 'stone-base';
     stoneBase.style.width = stoneWidth + 'px';
-    stoneBase.style.height = Math.floor(stoneHeight * 0.3) + 'px';
+    stoneBase.style.height = Math.floor(stoneHeight * 0.25) + 'px';
     
     const stoneBody = document.createElement('div');
     stoneBody.className = 'stone-body';
     stoneBody.style.width = stoneWidth + 'px';
-    stoneBody.style.height = Math.floor(stoneHeight * 0.7) + 'px';
+    stoneBody.style.height = Math.floor(stoneHeight * 0.75) + 'px';
     
-    const epitaph = document.createElement('div');
-    epitaph.className = 'epitaph';
-    epitaph.textContent = 'Click to inscribe...';
+    const inscriptionText = document.createElement('div');
+    inscriptionText.className = 'inscription-text';
+    inscriptionText.textContent = 'Click to inscribe...';
     
-    const dates = document.createElement('div');
-    dates.className = 'dates';
-    dates.textContent = '????-????';
+    // Scale font size with tombstone size
+    const fontSize = Math.min(Math.max(stoneWidth / 10, 10), 18);
+    inscriptionText.style.fontSize = fontSize + 'px';
     
-    stoneBody.appendChild(epitaph);
-    stoneBody.appendChild(dates);
+    stoneBody.appendChild(inscriptionText);
     tombstone.appendChild(stoneBase);
     tombstone.appendChild(stoneBody);
     tombstonesContainer.appendChild(tombstone);
@@ -206,7 +205,8 @@ function create2DTombstone(screenX, screenY, width, height) {
         y: relativeY,
         width: stoneWidth,
         height: stoneHeight,
-        scale: scale,
+        scale: perspectiveScale,
+        fontSize: fontSize,
         inscription: null
     };
     
@@ -241,16 +241,12 @@ function closeModal() {
 document.getElementById('inscriptionForm').addEventListener('submit', (e) => {
     e.preventDefault();
     
-    const name = document.getElementById('nameInput').value;
-    const birthYear = document.getElementById('birthYear').value || '????';
-    const deathYear = document.getElementById('deathYear').value || '????';
-    const epitaph = document.getElementById('epitaphInput').value;
+    const inscriptionText = document.getElementById('inscriptionText').value.trim();
+    
+    if (!inscriptionText) return;
     
     const inscription = {
-        name,
-        birthYear,
-        deathYear,
-        epitaph,
+        text: inscriptionText,
         timestamp: Date.now()
     };
     
@@ -267,11 +263,8 @@ document.getElementById('inscriptionForm').addEventListener('submit', (e) => {
 });
 
 function update2DTombstone(tombstone, inscription) {
-    const epitaphElement = tombstone.querySelector('.epitaph');
-    const datesElement = tombstone.querySelector('.dates');
-    
-    epitaphElement.innerHTML = `${inscription.name}<br>${inscription.epitaph}`;
-    datesElement.textContent = `${inscription.birthYear}-${inscription.deathYear}`;
+    const inscriptionElement = tombstone.querySelector('.inscription-text');
+    inscriptionElement.textContent = inscription.text;
 }
 
 function create2DFlowerBurst(tombstone) {
@@ -338,29 +331,39 @@ function load2DTombstones() {
             const stoneBase = document.createElement('div');
             stoneBase.className = 'stone-base';
             stoneBase.style.width = data.width + 'px';
-            stoneBase.style.height = Math.floor(data.height * 0.3) + 'px';
+            stoneBase.style.height = Math.floor(data.height * 0.25) + 'px';
             
             const stoneBody = document.createElement('div');
             stoneBody.className = 'stone-body';
             stoneBody.style.width = data.width + 'px';
-            stoneBody.style.height = Math.floor(data.height * 0.7) + 'px';
+            stoneBody.style.height = Math.floor(data.height * 0.75) + 'px';
             
-            const epitaph = document.createElement('div');
-            epitaph.className = 'epitaph';
+            const inscriptionText = document.createElement('div');
+            inscriptionText.className = 'inscription-text';
             
-            const dates = document.createElement('div');
-            dates.className = 'dates';
+            // Set font size
+            const fontSize = data.fontSize || Math.min(Math.max(data.width / 10, 10), 18);
+            inscriptionText.style.fontSize = fontSize + 'px';
             
             if (data.inscription) {
-                epitaph.innerHTML = `${data.inscription.name}<br>${data.inscription.epitaph}`;
-                dates.textContent = `${data.inscription.birthYear}-${data.inscription.deathYear}`;
+                // Handle both old format and new format
+                if (data.inscription.text) {
+                    inscriptionText.textContent = data.inscription.text;
+                } else if (data.inscription.name || data.inscription.epitaph) {
+                    // Convert old format to new format
+                    const parts = [];
+                    if (data.inscription.name) parts.push(data.inscription.name);
+                    if (data.inscription.birthYear && data.inscription.deathYear) {
+                        parts.push(`${data.inscription.birthYear}-${data.inscription.deathYear}`);
+                    }
+                    if (data.inscription.epitaph) parts.push(data.inscription.epitaph);
+                    inscriptionText.textContent = parts.join('\n');
+                }
             } else {
-                epitaph.textContent = 'Click to inscribe...';
-                dates.textContent = '????-????';
+                inscriptionText.textContent = 'Click to inscribe...';
             }
             
-            stoneBody.appendChild(epitaph);
-            stoneBody.appendChild(dates);
+            stoneBody.appendChild(inscriptionText);
             tombstone.appendChild(stoneBase);
             tombstone.appendChild(stoneBody);
             tombstonesContainer.appendChild(tombstone);

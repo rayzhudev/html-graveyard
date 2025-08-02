@@ -71,11 +71,9 @@
     <div class="inscription-modal" id="inscriptionModal">
         <div class="modal-content">
             <h2>Inscribe This Stone</h2>
+            <p class="modal-instructions">Enter your inscription below. Use line breaks to create separate lines on the tombstone.</p>
             <form id="inscriptionForm">
-                <input type="text" id="nameInput" placeholder="Name..." maxlength="20" required>
-                <input type="text" id="birthYear" placeholder="Birth Year" maxlength="4" pattern="[0-9]{4}">
-                <input type="text" id="deathYear" placeholder="Death Year" maxlength="4" pattern="[0-9]{4}">
-                <textarea id="epitaphInput" placeholder="A few words... (max 50 chars)" maxlength="50" required></textarea>
+                <textarea id="inscriptionText" placeholder="Enter your inscription here...&#10;You can use multiple lines&#10;Each line will appear on the stone" maxlength="200" required></textarea>
                 <div class="modal-buttons">
                     <button type="submit" class="btn-inscribe">Inscribe</button>
                     <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
