@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Graveyard - Leave Your Mark</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="scanlines"></div>
+    <div class="noise"></div>
+    
+    <header>
+        <h1 class="glitch" data-text="DIGITAL GRAVEYARD">DIGITAL GRAVEYARD</h1>
+        <p class="subtitle">Est. 2000 - Where pixels rest in peace</p>
+    </header>
+
+    <main class="graveyard">
+        <div class="moon"></div>
+        <div class="fog"></div>
+        
+        <div class="grave-row">
+            <div class="gravestone" data-id="1">
+                <div class="stone-top"></div>
+                <div class="stone-body">
+                    <p class="epitaph">Click to inscribe...</p>
+                    <p class="dates">????-????</p>
+                </div>
+            </div>
+            
+            <div class="gravestone" data-id="2">
+                <div class="stone-top"></div>
+                <div class="stone-body">
+                    <p class="epitaph">Click to inscribe...</p>
+                    <p class="dates">????-????</p>
+                </div>
+            </div>
+            
+            <div class="gravestone" data-id="3">
+                <div class="stone-top"></div>
+                <div class="stone-body">
+                    <p class="epitaph">Click to inscribe...</p>
+                    <p class="dates">????-????</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grave-row">
+            <div class="gravestone old" data-id="4">
+                <div class="stone-top"></div>
+                <div class="stone-body">
+                    <p class="epitaph">Click to inscribe...</p>
+                    <p class="dates">????-????</p>
+                </div>
+            </div>
+            
+            <div class="gravestone" data-id="5">
+                <div class="stone-top"></div>
+                <div class="stone-body">
+                    <p class="epitaph">Click to inscribe...</p>
+                    <p class="dates">????-????</p>
+                </div>
+            </div>
+            
+            <div class="gravestone cracked" data-id="6">
+                <div class="stone-top"></div>
+                <div class="stone-body">
+                    <p class="epitaph">Click to inscribe...</p>
+                    <p class="dates">????-????</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grave-row">
+            <div class="gravestone" data-id="7">
+                <div class="stone-top"></div>
+                <div class="stone-body">
+                    <p class="epitaph">Click to inscribe...</p>
+                    <p class="dates">????-????</p>
+                </div>
+            </div>
+            
+            <div class="gravestone old" data-id="8">
+                <div class="stone-top"></div>
+                <div class="stone-body">
+                    <p class="epitaph">Click to inscribe...</p>
+                    <p class="dates">????-????</p>
+                </div>
+            </div>
+            
+            <div class="gravestone" data-id="9">
+                <div class="stone-top"></div>
+                <div class="stone-body">
+                    <p class="epitaph">Click to inscribe...</p>
+                    <p class="dates">????-????</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="inscription-modal" id="inscriptionModal">
+        <div class="modal-content">
+            <h2>Inscribe This Stone</h2>
+            <form id="inscriptionForm">
+                <input type="text" id="nameInput" placeholder="Name..." maxlength="20" required>
+                <input type="text" id="birthYear" placeholder="Birth Year" maxlength="4" pattern="[0-9]{4}">
+                <input type="text" id="deathYear" placeholder="Death Year" maxlength="4" pattern="[0-9]{4}">
+                <textarea id="epitaphInput" placeholder="Final words... (max 50 chars)" maxlength="50" required></textarea>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-inscribe">Inscribe</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>Visitor #<span id="visitorCount">00666</span></p>
+        <p>Best viewed in Internet Explorer 6</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
